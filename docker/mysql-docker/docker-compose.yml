@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: erp-mysql
+    restart: always
+
+    environment:
+      MYSQL_ROOT_PASSWORD: buubeo10
+      MYSQL_DATABASE: infoInvoice
+      MYSQL_USER: buu
+      MYSQL_PASSWORD: buubeo278
+
+    ports:
+      - "3306:3306"
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init:/docker-entrypoint-initdb.d
+
+    command: --default-authentication-plugin=mysql_native_password
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: erp-phpmyadmin
+    restart: always
+
+    ports:
+      - "8080:80"
+
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+
+volumes:
+  mysql_data:

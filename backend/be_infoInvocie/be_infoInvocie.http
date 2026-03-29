@@ -1,0 +1,6 @@
+@be_infoInvocie_HostAddress = http://localhost:5111
+
+GET {{be_infoInvocie_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
