@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace be_infoInvoice.Controllers;
 
-[Route("api/[controller]")] // Đường dẫn sẽ là api/invoice
+[Route("api/[controller]")]
 [ApiController]
 public class InvoiceController : ControllerBase
 {
@@ -15,22 +15,16 @@ public class InvoiceController : ControllerBase
     {
         _invoiceService = invoiceService;
     }
-
-    /// <summary>
-    /// Lấy danh sách nhà cung cấp để hiển thị lên Select Box ở Frontend
-    /// GET: api/invoice/providers
-    /// </summary>
+    
+    // GET: api/invoice/providers
     [HttpGet("providers")]
     public async Task<IActionResult> GetProviders()
     {
         var providers = await _invoiceService.GetAvailableProvidersAsync();
         return Ok(providers);
     }
-
-    /// <summary>
-    /// API Đăng nhập và kết nối nhà cung cấp HĐĐT
-    /// POST: api/invoice/login
-    /// </summary>
+    
+    // POST: api/invoice/login
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {

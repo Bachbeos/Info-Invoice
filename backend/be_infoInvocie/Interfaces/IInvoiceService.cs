@@ -7,6 +7,6 @@ public interface IInvoiceService
 {
     Task<IEnumerable<Provider>> GetAvailableProvidersAsync();
     
-    // Hàm quan trọng nhất: Xử lý đăng nhập và trả về kết quả thành công/thất bại
+    // Handle Login and return success or fail
     Task<bool> AuthenticateAndSaveSessionAsync(LoginRequest request);
 }

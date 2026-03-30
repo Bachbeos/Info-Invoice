@@ -36,3 +36,5 @@ D:\Data\Projects\InfoPlus\InfoInvoice\backend\be_infoInvocie\obj\Debug\net9.0\be
 D:\Data\Projects\InfoPlus\InfoInvoice\backend\be_infoInvocie\obj\Debug\net9.0\refint\be_infoInvoice.dll
 D:\Data\Projects\InfoPlus\InfoInvoice\backend\be_infoInvocie\obj\Debug\net9.0\be_infoInvoice.pdb
 D:\Data\Projects\InfoPlus\InfoInvoice\backend\be_infoInvocie\obj\Debug\net9.0\ref\be_infoInvoice.dll
+D:\Data\Projects\InfoPlus\InfoInvoice\backend\be_infoInvocie\bin\Debug\net9.0\BCrypt.Net-Next.dll
+D:\Data\Projects\InfoPlus\InfoInvoice\backend\be_infoInvocie\obj\Debug\net9.0\be_infoInvocie.sourcelink.json

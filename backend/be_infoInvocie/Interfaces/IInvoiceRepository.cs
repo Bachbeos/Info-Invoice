@@ -4,10 +4,13 @@ namespace be_infoInvoice.Interfaces;
 
 public interface IInvoiceRepository
 {
-    // Lay danh sach nha cung cap
+    // Get list Provider
     Task<IEnumerable<Provider>> GetProvidersAsync();
-    //Luu phien dang nhap va tra ve ID cua session vua tao
+    //Save the login session and return the id of newly created session
     Task<InvoiceSession> SaveSessionAsync(InvoiceSession session);
-    //Luu refresh token lien ket voi session
+    //Save refresh token linked to session
     Task SaveRefreshTokenAsync(RefreshToken token);
+    
+    Task<InvoiceSession?> GetExistingSessionAsync(int providerId, string maDvcs);
+    Task UpdateSessionAsync(InvoiceSession session);
 }

@@ -21,40 +21,54 @@ public class InvoiceService : IInvoiceService
 
     public async Task<bool> AuthenticateAndSaveSessionAsync(LoginRequest request)
     {
-        // BƯỚC 1: Tư duy thực tế - Tại đây bạn sẽ gọi API của nhà cung cấp (EasyInvoice, v.v.)
-        // Để xác thực xem Username/Password có đúng không. 
-        // Hiện tại chúng ta giả định là luôn đúng (true).
+        // Giả định xác thực thành công
         bool isExternalAuthValid = true; 
-
         if (!isExternalAuthValid) return false;
+    
+        // Băm mật khẩu để bảo mật
+        string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
+    
+        // Tìm session cũ
+        var existingSession = await _repository.GetExistingSessionAsync(request.ProviderId, request.MaDvcs);
 
-        // BƯỚC 2: Chuyển đổi từ DTO sang Entity (InvoiceSession)
-        var session = new InvoiceSession
+        int currentSessionId;
+
+        if (existingSession != null)
         {
-            ProviderId = request.ProviderId,
-            Url = request.Url,
-            MaDvcs = request.MaDvcs,
-            Username = request.Username,
-            Password = request.Password, // Lưu ý: Thực tế nên mã hóa hoặc bảo mật hơn
-            TenantId = request.TenantId,
-            CreatedAt = DateTime.Now
-        };
+            // CẬP NHẬT: Gán giá trị mới cho object cũ
+            existingSession.Url = request.Url;
+            existingSession.Username = request.Username;
+            existingSession.Password = hashedPassword;
+            existingSession.TenantId = request.TenantId;
+            existingSession.CreatedAt = DateTime.Now;
 
-        // BƯỚC 3: Lưu Session vào Database thông qua Repository
-        var savedSession = await _repository.SaveSessionAsync(session);
-
-        // BƯỚC 4: Tạo một Refresh Token giả lập để duy trì phiên
-        var refreshToken = new RefreshToken
+            await _repository.UpdateSessionAsync(existingSession);
+            currentSessionId = existingSession.Id;
+        }
+        else
         {
-            SessionId = savedSession.Id,
-            Token = Guid.NewGuid().ToString(), // Tạo một chuỗi ngẫu nhiên làm token
-            ExpiresAt = DateTime.Now.AddDays(7), // Token có hạn 7 ngày
-            IsRevoked = false,
-            CreatedAt = DateTime.Now
-        };
+            // TẠO MỚI: Khởi tạo object mới
+            var newSession = new InvoiceSession {
+                ProviderId = request.ProviderId,
+                Url = request.Url,
+                MaDvcs = request.MaDvcs,
+                Username = request.Username,
+                Password = hashedPassword,
+                TenantId = request.TenantId,
+                CreatedAt = DateTime.Now
+            };
+            var saved = await _repository.SaveSessionAsync(newSession);
+            currentSessionId = saved.Id;
+        }
 
-        // BƯỚC 5: Lưu Refresh Token
-        await _repository.SaveRefreshTokenAsync(refreshToken);
+        // Tạo Refresh Token dựa trên currentSessionId (dù là mới hay cũ)
+        var token = new RefreshToken {
+            SessionId = currentSessionId,
+            Token = Guid.NewGuid().ToString(),
+            ExpiresAt = DateTime.Now.AddDays(7),
+            CreatedAt = DateTime.Now // Nhớ gán cả ngày tạo cho token nếu DB yêu cầu
+        };
+        await _repository.SaveRefreshTokenAsync(token);
 
         return true;
     }

@@ -26,6 +26,18 @@ public class InvoiceRepository : IInvoiceRepository
         return session; // Trả về để lấy được ID tự tăng cho bước lưu Token
     }
 
+    public async Task<InvoiceSession?> GetExistingSessionAsync(int providerId, string maDvcs)
+    {
+        return await _context.InvoiceSessions
+            .FirstOrDefaultAsync(s => s.ProviderId == providerId && s.MaDvcs == maDvcs);
+    }
+
+    public async Task UpdateSessionAsync(InvoiceSession session)
+    {
+        _context.InvoiceSessions.Update(session);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task SaveRefreshTokenAsync(RefreshToken token)
     {
         _context.RefreshTokens.Add(token);

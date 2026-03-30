@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "P4PNJrYjSWk=",
+  "dgSpecHash": "8qb1OVLaTcU=",
   "success": true,
   "projectFilePath": "D:\\Data\\Projects\\InfoPlus\\InfoInvoice\\backend\\be_infoInvocie\\be_infoInvocie.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\trnhx\\.nuget\\packages\\bcrypt.net-next\\4.1.0\\bcrypt.net-next.4.1.0.nupkg.sha512",
     "C:\\Users\\trnhx\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.0\\microsoft.aspnetcore.openapi.9.0.0.nupkg.sha512",
     "C:\\Users\\trnhx\\.nuget\\packages\\microsoft.entityframeworkcore\\9.0.0\\microsoft.entityframeworkcore.9.0.0.nupkg.sha512",
     "C:\\Users\\trnhx\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\9.0.0\\microsoft.entityframeworkcore.abstractions.9.0.0.nupkg.sha512",
