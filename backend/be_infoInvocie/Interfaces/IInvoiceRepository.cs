@@ -13,4 +13,5 @@ public interface IInvoiceRepository
     
     Task<InvoiceSession?> GetExistingSessionAsync(int providerId, string maDvcs);
     Task UpdateSessionAsync(InvoiceSession session);
+    Task<bool> CreateInvoiceAsync(Invoice invoice);
 }

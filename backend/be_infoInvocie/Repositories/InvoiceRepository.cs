@@ -43,4 +43,10 @@ public class InvoiceRepository : IInvoiceRepository
         _context.RefreshTokens.Add(token);
         await _context.SaveChangesAsync();
     }
+    
+    public async Task<bool> CreateInvoiceAsync(Invoice invoice)
+    {
+        _context.Invoices.Add(invoice);
+        return await _context.SaveChangesAsync() > 0;
+    }
 }

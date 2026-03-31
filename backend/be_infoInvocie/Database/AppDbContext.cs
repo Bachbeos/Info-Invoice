@@ -10,6 +10,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Provider> Providers { get; set; } //Dbset: Providers, DB: providers, Entity: Provider
     public DbSet<InvoiceSession> InvoiceSessions { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<Invoice> Invoices { get; set; }
+    public DbSet<InvoiceItem> InvoiceItems { get; set; }
+    public DbSet<InvoiceCustomer> InvoiceCustomers { get; set; }
     
     //config mapping class <-> db
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -18,5 +21,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Provider>().ToTable("providers");
         modelBuilder.Entity<InvoiceSession>().ToTable("invoice_sessions");
         modelBuilder.Entity<RefreshToken>().ToTable("refresh_tokens");
+        // Thiết lập quan hệ 1-1 giữa Invoice và Customer
+        modelBuilder.Entity<Invoice>()
+            .HasOne(i => i.Customer)
+            .WithOne()
+            .HasForeignKey<InvoiceCustomer>(c => c.InvoiceId);
+
+        // Thiết lập quan hệ 1-n giữa Invoice và Items
+        modelBuilder.Entity<Invoice>()
+            .HasMany(i => i.Items)
+            .WithOne()
+            .HasForeignKey(item => item.InvoiceId);
     }
 }
