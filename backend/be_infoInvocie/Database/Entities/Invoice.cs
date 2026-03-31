@@ -25,4 +25,13 @@ public class Invoice {
 
     public virtual ICollection<InvoiceItem> Items { get; set; } = new List<InvoiceItem>();
     public virtual InvoiceCustomer? Customer { get; set; }
+    
+    [Column("invoice_type")]
+    public int InvoiceType { get; set; } = 1; // 1: Gốc, 2: Thay thế, 3: Điều chỉnh
+
+    [Column("transaction_id_old")]
+    public string? TransactionIdOld { get; set; }
+
+    [Column("note_desc")]
+    public string? NoteDesc { get; set; }
 }

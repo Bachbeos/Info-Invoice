@@ -18,18 +18,20 @@ public class InvoiceService : IInvoiceService
         return await _repository.GetProvidersAsync();
     }
 
+    /// <summary>
+    /// Xác thực và lưu phiên làm việc. Trả về SessionId để tạo JWT Token.
+    /// </summary>
     public async Task<(bool IsSuccess, int SessionId)> AuthenticateAndSaveSessionAsync(LoginRequest request)
     {
-        // 1. Giả định xác thực thành công (TODO: Call API Provider thật tại đây)
+        // 1. Giả định xác thực thành công (Sau này call API của EasyInvoice/SInvoice tại đây)
         bool isExternalAuthValid = true; 
         if (!isExternalAuthValid) return (false, 0);
     
-        // 2. Băm mật khẩu để bảo mật
+        // 2. Băm mật khẩu để lưu trữ an toàn
         string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
     
-        // 3. Tìm session cũ để tránh trùng lặp (Logic Upsert)
+        // 3. Logic Upsert: Nếu tồn tại Session cũ thì cập nhật, chưa có thì tạo mới
         var existingSession = await _repository.GetExistingSessionAsync(request.ProviderId, request.MaDvcs);
-
         int currentSessionId;
 
         if (existingSession != null)
@@ -58,7 +60,7 @@ public class InvoiceService : IInvoiceService
             currentSessionId = saved.Id;
         }
 
-        // 4. Tạo Refresh Token
+        // 4. Lưu Refresh Token để duy trì đăng nhập
         var token = new RefreshToken {
             SessionId = currentSessionId,
             Token = Guid.NewGuid().ToString(),
@@ -66,14 +68,54 @@ public class InvoiceService : IInvoiceService
             CreatedAt = DateTime.Now
         };
         await _repository.SaveRefreshTokenAsync(token);
+
         return (true, currentSessionId);
     }
     
+    /// <summary>
+    /// PHÁT HÀNH MỚI: Lưu hóa đơn gốc (InvoiceType = 1)
+    /// </summary>
     public async Task<bool> IssueInvoiceAsync(InvoiceIssuanceDto dto, int sessionId)
     {
-        // TƯ DUY: Khởi tạo đối tượng cha (Invoice) và gán các đối tượng con trực tiếp
-        // EF Core sẽ tự động lo việc Insert vào 3 bảng và gán ID liên kết (Foreign Key)
-        var invoice = new Invoice
+        var invoice = MapBaseInvoice(dto, sessionId);
+        invoice.InvoiceType = 1; // Hóa đơn gốc
+        
+        return await _repository.CreateInvoiceAsync(invoice);
+    }
+
+    /// <summary>
+    /// THAY THẾ: Lưu hóa đơn thay thế (InvoiceType = 2)
+    /// </summary>
+    public async Task<bool> ReplaceInvoiceAsync(InvoiceReplaceDto dto, int sessionId)
+    {
+        var invoice = MapBaseInvoice(dto, sessionId);
+        invoice.InvoiceType = 2; // Hóa đơn thay thế
+        invoice.TransactionIdOld = dto.TransactionIdOld; // Truy vết ID cũ
+        invoice.NoteDesc = dto.Note; // Lý do thay thế
+
+        return await _repository.CreateInvoiceAsync(invoice);
+    }
+
+    /// <summary>
+    /// ĐIỀU CHỈNH: Lưu hóa đơn điều chỉnh (InvoiceType = 3)
+    /// </summary>
+    public async Task<bool> AdjustInvoiceAsync(InvoiceAdjustDto dto, int sessionId)
+    {
+        var invoice = MapBaseInvoice(dto, sessionId);
+        invoice.InvoiceType = 3; // Hóa đơn điều chỉnh
+        invoice.TransactionIdOld = dto.TransactionIdOld; // Truy vết ID cũ
+        invoice.NoteDesc = dto.Note; // Lý do điều chỉnh
+
+        return await _repository.CreateInvoiceAsync(invoice);
+    }
+
+    /// <summary>
+    /// PRIVATE HELPER: Hàm dùng chung để Map dữ liệu từ DTO sang Entity.
+    /// Giúp tránh lặp code (DRY Principle) và dễ bảo trì.
+    /// </summary>
+    private Invoice MapBaseInvoice(InvoiceIssuanceDto dto, int sessionId)
+    {
+        return new Invoice
         {
             SessionId = sessionId,
             TransactionId = dto.TransactionId,
@@ -88,15 +130,12 @@ public class InvoiceService : IInvoiceService
             Note = dto.Note,
             ExchCd = dto.ExchCd,
             ExchRt = dto.ExchRt,
-            
-            // Map thông tin ngân hàng bên bán (Seller Bank)
             BankAccount = dto.BankAccount,
             BankName = dto.BankName,
-
-            Status = false, // Mặc định false, chờ xử lý API từ nhà cung cấp sau
+            Status = false, // Chờ gọi API nhà cung cấp thành công mới update true
             CreatedAt = DateTime.Now,
 
-            // MAP THÔNG TIN NGƯỜI MUA (Quan hệ 1-1)
+            // Map thông tin Người mua (1-1)
             Customer = new InvoiceCustomer
             {
                 CustCd = dto.Customer.CustCd,
@@ -113,7 +152,7 @@ public class InvoiceService : IInvoiceService
                 EmailCc = dto.Customer.EmailCC
             },
 
-            // MAP DANH SÁCH SẢN PHẨM (Quan hệ 1-n)
+            // Map danh sách Sản phẩm (1-n)
             Items = dto.Products.Select(p => new InvoiceItem
             {
                 ItmCd = p.ItmCd,
@@ -130,8 +169,36 @@ public class InvoiceService : IInvoiceService
                 TotalAmt = p.TotalAmt
             }).ToList()
         };
+    }
+    
+    public async Task<InvoiceExportResponse> ExportInvoiceXmlAsync(string transactionId, int sessionId)
+    {
+        // 1. Lấy thông tin session từ Database để có Account nhà cung cấp
+        var session = await _repository.GetSessionByIdAsync(sessionId);
+        if (session == null) 
+        {
+            return new InvoiceExportResponse { Status = false, Message = "Phiên làm việc hết hạn hoặc không tồn tại." };
+        }
 
-        // Thực hiện lưu một lượt cả 3 bảng (Atomicity)
-        return await _repository.CreateInvoiceAsync(invoice);
+        try 
+        {
+            // 2. TƯ DUY: Đây là nơi bro sẽ dùng HttpClient để gọi sang EasyInvoice
+            // Ví dụ: var xmlData = await _easyInvoiceClient.DownloadXml(session.Url, transactionId, session.Username...);
+        
+            // GIẢ LẬP: Giả sử nhà cung cấp trả về chuỗi XML sau khi Base64
+            // Nội dung gốc: <Root><Invoice>...</Invoice></Root>
+            string base64Xml = "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48SXZvaWNlPjxUcmFuc2FjdGlvbj5URVNUMDAxPC9UcmFuc2FjdGlvbj48L0l2b2ljZT4=";
+
+            return new InvoiceExportResponse 
+            { 
+                Status = true, 
+                Message = "Lấy dữ liệu XML thành công!", 
+                Data = base64Xml 
+            };
+        }
+        catch (Exception ex)
+        {
+            return new InvoiceExportResponse { Status = false, Message = "Lỗi kết nối nhà cung cấp: " + ex.Message };
+        }
     }
 }

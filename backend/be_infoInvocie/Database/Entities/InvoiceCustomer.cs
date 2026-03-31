@@ -17,5 +17,5 @@ public class InvoiceCustomer {
     [Column("cust_bank_account")] public string? CustBankAccount { get; set; }
     [Column("cust_bank_name")] public string? CustBankName { get; set; }
     [Column("email")] public string? Email { get; set; }
-    [Column("email_cc")] public string? EmailCc { get; set; } // Chữ C viết thường ở cuối
+    [Column("email_cc")] public string? EmailCc { get; set; } 
 }

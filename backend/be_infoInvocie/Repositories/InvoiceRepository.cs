@@ -49,4 +49,10 @@ public class InvoiceRepository : IInvoiceRepository
         _context.Invoices.Add(invoice);
         return await _context.SaveChangesAsync() > 0;
     }
+    
+    public async Task<InvoiceSession?> GetSessionByIdAsync(int sessionId)
+    {
+        return await _context.InvoiceSessions
+            .FirstOrDefaultAsync(s => s.Id == sessionId);
+    }
 }
