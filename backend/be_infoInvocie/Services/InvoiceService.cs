@@ -40,6 +40,7 @@ public class InvoiceService : IInvoiceService
             existingSession.Username = request.Username;
             existingSession.Password = hashedPassword;
             existingSession.TenantId = request.TenantId;
+            existingSession.ApiKey = request.Key;
             existingSession.CreatedAt = DateTime.Now;
 
             await _repository.UpdateSessionAsync(existingSession);
@@ -54,6 +55,7 @@ public class InvoiceService : IInvoiceService
                 Username = request.Username,
                 Password = hashedPassword,
                 TenantId = request.TenantId,
+                ApiKey = request.Key,
                 CreatedAt = DateTime.Now
             };
             var saved = await _repository.SaveSessionAsync(newSession);
@@ -200,5 +202,84 @@ public class InvoiceService : IInvoiceService
         {
             return new InvoiceExportResponse { Status = false, Message = "Lỗi kết nối nhà cung cấp: " + ex.Message };
         }
+    }
+    
+    public async Task<TaxCheckResponse> CheckTaxStatusAsync(TaxCheckRequest request, int sessionId)
+    {
+        // 1. Validate số lượng MST (Tối đa 100 theo tài liệu)
+        if (request.TaxCodes == null || request.TaxCodes.Count == 0)
+            return new TaxCheckResponse { Status = false, Message = "Danh sách MST trống." };
+
+        if (request.TaxCodes.Count > 100)
+            return new TaxCheckResponse { Status = false, Message = "Chỉ được check tối đa 100 MST/lần." };
+
+        // 2. GIẢ LẬP: Gọi API Thuế và nhận về List<object> (Data từ tài liệu bro gửi)
+        // Sau này bro sẽ thay đoạn này bằng HttpClient gọi API thật
+        var apiResults = request.TaxCodes.Select(mst => new TaxStatusResult
+        {
+            MaSoThue = mst,
+            MasothueId = Guid.NewGuid().ToString(),
+            TenCty = "Công ty Test " + mst,
+            DiaChi = "Hà Nội, Việt Nam",
+            Tthai = "00",
+            TrangThaiHoatDong = "NNT đang hoạt động (đã được cấp GCN ĐKT)",
+            LastUpdate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+            NgayKiemTra = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+        }).ToList();
+
+        // 3. MAP sang Entity để chuẩn bị lưu vào Database
+        var historyEntities = apiResults.Select(r => new TaxCheckHistory
+        {
+            SessionId = sessionId,
+            TaxCode = r.MaSoThue,
+            CompanyName = r.TenCty,
+            Address = r.DiaChi,
+            StatusCode = r.Tthai,
+            StatusName = r.TrangThaiHoatDong,
+            LastUpdateTax = r.LastUpdate,
+            CheckedAt = DateTime.Now
+        }).ToList();
+
+        // 4. LƯU VÀO DB (Bulk Insert)
+        var isSaved = await _repository.SaveTaxCheckHistoryAsync(historyEntities);
+
+        return new TaxCheckResponse
+        {
+            Status = isSaved,
+            Message = isSaved ? "Tra cứu và lưu lịch sử thành công" : "Tra cứu thành công nhưng lưu DB lỗi",
+            Datas = apiResults
+        };
+    }
+    
+    public async Task<byte[]> PrintInvoicePdfAsync(string transactionId, int sessionId)
+    {
+        // 1. Lấy Session kèm theo ApiKey đã lưu
+        var session = await _repository.GetSessionByIdAsync(sessionId);
+        if (session == null)
+        {
+            throw new Exception("Không tìm thấy phiên làm việc này.");
+        }
+
+        // DỰ ÁN DEMO: Tạm thời cho qua nếu không có ApiKey (thực tế thì uncomment dòng dưới để ném Exception)
+        if (string.IsNullOrEmpty(session.ApiKey))
+        {
+            // throw new Exception("Không tìm thấy ApiKey tích hợp cho phiên làm việc này.");
+        }
+
+        // 2. TƯ DUY: Dùng session.Url và session.ApiKey để gọi sang M-Invoice
+        // var pdfData = await _mInvoiceClient.GetPdf(session.Url, session.ApiKey, transactionId);
+
+        // GIẢ LẬP: Trả về một file PDF hợp lệ tối giản để trình duyệt/reader có thể mở được
+        string pdfContent = 
+            "%PDF-1.4\n" +
+            "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n" +
+            "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n" +
+            "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 600 400] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n" +
+            "4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n" +
+            "5 0 obj\n<< /Length 61 >>\nstream\nBT\n/F1 18 Tf\n50 300 Td\n(Hoa don mau - Transaction: " + transactionId + ") Tj\nET\nendstream\nendobj\n" +
+            "xref\n0 6\n0000000000 65535 f \n0000000010 00000 n \n0000000060 00000 n \n0000000117 00000 n \n0000000244 00000 n \n0000000332 00000 n \n" +
+            "trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n445\n%%EOF";
+
+        return System.Text.Encoding.ASCII.GetBytes(pdfContent);
     }
 }

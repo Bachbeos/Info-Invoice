@@ -1,0 +1,36 @@
+.invoice-container {
+    padding-bottom: 5rem;
+    background-color: #f8f9fa;
+
+    .card {
+        border-radius: 8px;
+        border: none;
+
+        .card-header {
+            font-weight: 600;
+            background-color: #f1f3f5;
+            padding: 0.75rem 1.25rem;
+        }
+    }
+
+    .table-responsive {
+        border-radius: 0 0 8px 8px;
+    }
+
+    .result-box {
+        max-height: 400px;
+        overflow-y: auto;
+        font-size: 13px;
+        font-family: 'Fira Code', monospace;
+        background-color: #1e1e1e !important;
+    }
+
+    .form-label {
+        margin-bottom: 0.3rem;
+        color: #495057;
+    }
+}
+
+.pt-0 {
+    padding-top: 0 !important;
+}

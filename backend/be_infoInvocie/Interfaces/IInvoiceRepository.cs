@@ -16,4 +16,7 @@ public interface IInvoiceRepository
     Task<bool> CreateInvoiceAsync(Invoice invoice);
     
     Task<InvoiceSession?> GetSessionByIdAsync(int sessionId);
+    Task<bool> SaveTaxCheckHistoryAsync(List<TaxCheckHistory> historyList);
+    
+    
 }

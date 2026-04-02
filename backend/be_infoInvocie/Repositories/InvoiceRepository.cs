@@ -55,4 +55,10 @@ public class InvoiceRepository : IInvoiceRepository
         return await _context.InvoiceSessions
             .FirstOrDefaultAsync(s => s.Id == sessionId);
     }
+    
+    public async Task<bool> SaveTaxCheckHistoryAsync(List<TaxCheckHistory> historyList)
+    {
+        await _context.TaxCheckHistories.AddRangeAsync(historyList);
+        return await _context.SaveChangesAsync() > 0;
+    }
 }

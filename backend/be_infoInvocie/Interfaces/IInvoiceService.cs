@@ -14,4 +14,6 @@ public interface IInvoiceService
     Task<bool> ReplaceInvoiceAsync(InvoiceReplaceDto dto, int sessionId);
     Task<bool> AdjustInvoiceAsync(InvoiceAdjustDto dto, int sessionId);
     Task<InvoiceExportResponse> ExportInvoiceXmlAsync(string transactionId, int sessionId);
+    Task<TaxCheckResponse> CheckTaxStatusAsync(TaxCheckRequest request, int sessionId);
+    Task<byte[]> PrintInvoicePdfAsync(string transactionId, int sessionId);
 }

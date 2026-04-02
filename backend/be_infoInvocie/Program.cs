@@ -22,6 +22,18 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<ITctRepository, TctRepository>();
+builder.Services.AddScoped<ITctService, TctService>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()   // Cho phép mọi nguồn (Domain)
+            .AllowAnyMethod()   // Cho phép mọi phương thức (GET, POST, PUT, DELETE...)
+            .AllowAnyHeader();  // Cho phép mọi Header
+    });
+});
 
 // 🔥 3.1 Cấu hình Authentication & JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -46,6 +58,8 @@ var app = builder.Build();
 
 // 🔥 4. Middleware
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();

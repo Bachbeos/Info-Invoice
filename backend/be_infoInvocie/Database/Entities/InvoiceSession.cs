@@ -25,4 +25,7 @@ public class InvoiceSession
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public Provider? Provider { get; set; }
+    
+    [Column("api_key")]
+    public string? ApiKey { get; set; }
 }

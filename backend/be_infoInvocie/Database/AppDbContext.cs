@@ -1,4 +1,4 @@
-﻿using be_infoInvoice.Database.Entities;
+using be_infoInvoice.Database.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace be_infoInvoice.Database;
@@ -13,6 +13,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Invoice> Invoices { get; set; }
     public DbSet<InvoiceItem> InvoiceItems { get; set; }
     public DbSet<InvoiceCustomer> InvoiceCustomers { get; set; }
+    public DbSet<TaxCheckHistory> TaxCheckHistories { get; set; }
+    
+    // TCT DbSets
+    public DbSet<TctAccount> TctAccounts { get; set; }
+    public DbSet<TctSession> TctSessions { get; set; }
+    public DbSet<TctInvoice> TctInvoices { get; set; }
     
     //config mapping class <-> db
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -21,6 +27,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Provider>().ToTable("providers");
         modelBuilder.Entity<InvoiceSession>().ToTable("invoice_sessions");
         modelBuilder.Entity<RefreshToken>().ToTable("refresh_tokens");
+        
+        // TCT Tables Mapping
+        modelBuilder.Entity<TctAccount>().ToTable("tct_accounts");
+        modelBuilder.Entity<TctSession>().ToTable("tct_sessions");
+        modelBuilder.Entity<TctInvoice>().ToTable("tct_invoices");
+        
         // Thiết lập quan hệ 1-1 giữa Invoice và Customer
         modelBuilder.Entity<Invoice>()
             .HasOne(i => i.Customer)

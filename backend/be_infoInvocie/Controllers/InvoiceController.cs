@@ -33,7 +33,7 @@ public class InvoiceController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        if (request == null) return BadRequest("Dữ liệu không hợp lệ.");
+        if (request == null) return BadRequest( new {code = 400, message = "Dữ liệu không hợp lệ."});
 
         var result = await _invoiceService.AuthenticateAndSaveSessionAsync(request);
 
@@ -41,14 +41,15 @@ public class InvoiceController : ControllerBase
         {
             var token = _jwtService.GenerateToken(result.SessionId);
 
-            return Ok(new { 
+            return Ok(new {
+                code = 200,
                 message = "Kết nối nhà cung cấp thành công!",
                 accessToken = token,
-                timestamp = DateTime.Now,
+                timestamp = DateTime.Now
             });
         }
 
-        return Unauthorized(new { message = "Thông tin đăng nhập hoặc kết nối không chính xác." });
+        return Unauthorized(new { code = 401, message = "Thông tin đăng nhập hoặc kết nối không chính xác." });
     }
     
     [Authorize] // QUAN TRỌNG: Phải có Authorize thì User.FindFirst mới có dữ liệu
@@ -162,5 +163,50 @@ public class InvoiceController : ControllerBase
         }
 
         return Ok(result);
+    }
+    
+    [Authorize]
+    [HttpPost("check-tax-status")]
+    public async Task<IActionResult> CheckTaxStatus([FromBody] TaxCheckRequest request)
+    {
+        var sessionIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                           ?? User.FindFirst("sub")?.Value;
+
+        if (!int.TryParse(sessionIdStr, out int sessionId)) return Unauthorized();
+
+        // Gọi service
+        var result = await _invoiceService.CheckTaxStatusAsync(request, sessionId);
+    
+        // Sửa lỗi Ambiguous bằng cách kiểm tra bool trước
+        if (result.Status) 
+        {
+            return Ok(result);
+        }
+    
+        // Chỉ định rõ trả về Object để hết lỗi Ambiguous
+        return BadRequest((object)result); 
+    }
+    
+    [Authorize]
+    [HttpGet("print/{transactionId}")]
+    public async Task<IActionResult> PrintInvoice(string transactionId)
+    {
+        // Lấy sessionId từ Token
+        var sessionIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                           ?? User.FindFirst("sub")?.Value;
+
+        if (!int.TryParse(sessionIdStr, out int sessionId)) return Unauthorized();
+
+        try 
+        {
+            byte[] pdfData = await _invoiceService.PrintInvoicePdfAsync(transactionId, sessionId);
+        
+            // Trả về file PDF để trình duyệt tự mở hoặc tải về
+            return File(pdfData, "application/pdf", $"Invoice_{transactionId}.pdf");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }
