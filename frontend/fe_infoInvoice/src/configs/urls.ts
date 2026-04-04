@@ -4,6 +4,7 @@ const endpoint = {
   },
   invoice: {
     providers: "/invoice/providers",
+    issue: "/invoice/issue",
   },
 } as const;
 

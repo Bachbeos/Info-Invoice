@@ -17,7 +17,7 @@ export function useLogin(): UseLoginResult {
   const login = async (body: AuthRequest): Promise<void> => {
     setIsLoading(true);
     try {
-      const response = await apiClient.post<AuthResponse>("/auth/login", body);
+      const response = await apiClient.post<AuthResponse>("/invoice/login", body);
       if (response.code === 200 && response.accessToken) {
         setToken(response.accessToken);
         navigate("/public-invoice");

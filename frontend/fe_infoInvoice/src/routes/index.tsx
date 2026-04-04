@@ -33,7 +33,7 @@ const router = createBrowserRouter([
     path: "/login",
     element: (
       <GuestOnlyRoute>
-        <Login />
+      <Login />
       </GuestOnlyRoute>
     ),
   },
@@ -41,7 +41,7 @@ const router = createBrowserRouter([
     path: "/public-invoice",
     element: (
       <ProtectedRoute>
-        <PublicInvoice />
+      <PublicInvoice />
       </ProtectedRoute>
     ),
   },
