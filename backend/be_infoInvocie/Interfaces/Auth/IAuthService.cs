@@ -1,0 +1,10 @@
+using be_infoInvoice.Core.DTOs;
+using be_infoInvoice.Database.Entities;
+
+namespace be_infoInvoice.Interfaces.Auth;
+
+public interface IAuthService
+{
+    Task<IEnumerable<Provider>> GetAvailableProvidersAsync();
+    Task<(bool IsSuccess, int SessionId)> AuthenticateAndSaveSessionAsync(LoginRequest request);
+}

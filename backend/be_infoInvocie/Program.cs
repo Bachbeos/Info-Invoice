@@ -1,11 +1,17 @@
 using be_infoInvoice.Database;
 using be_infoInvoice.Interfaces;
-using be_infoInvoice.Repositories;
-using be_infoInvoice.Services;
+using be_infoInvoice.Interfaces.Auth;
+using be_infoInvoice.Interfaces.Invoice;
+using be_infoInvoice.Repositories.Auth;
+using be_infoInvoice.Repositories.Invoice;
+using be_infoInvoice.Services.Auth;
+using be_infoInvoice.Services.Invoice;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using be_infoInvoice.Repositories;
+using be_infoInvoice.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,10 +24,29 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
-// 🔥 3. Dependency Injection
-builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
-builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+// 🔥 3. Dependency Injection — theo từng module
+// Auth
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+
+// Invoice Issue / Replace / Adjust
+builder.Services.AddScoped<IInvoiceIssueRepository, InvoiceIssueRepository>();
+builder.Services.AddScoped<IInvoiceIssueService, InvoiceIssueService>();
+
+// Invoice Export XML
+builder.Services.AddScoped<IInvoiceExportRepository, InvoiceExportRepository>();
+builder.Services.AddScoped<IInvoiceExportService, InvoiceExportService>();
+
+// Invoice Check Tax Status
+builder.Services.AddScoped<IInvoiceCheckRepository, InvoiceCheckRepository>();
+builder.Services.AddScoped<IInvoiceCheckService, InvoiceCheckService>();
+
+// Invoice Print PDF
+builder.Services.AddScoped<IInvoicePrintRepository, InvoicePrintRepository>();
+builder.Services.AddScoped<IInvoicePrintService, InvoicePrintService>();
+
+// TCT
 builder.Services.AddScoped<ITctRepository, TctRepository>();
 builder.Services.AddScoped<ITctService, TctService>();
 

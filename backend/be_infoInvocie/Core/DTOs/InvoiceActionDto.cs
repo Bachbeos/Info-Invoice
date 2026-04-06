@@ -1,4 +1,4 @@
-﻿namespace be_infoInvoice.Core.DTOs;
+namespace be_infoInvoice.Core.DTOs;
 
 public class InvoiceReplaceDto : InvoiceIssuanceDto
 {
@@ -11,6 +11,25 @@ public class InvoiceAdjustDto : InvoiceIssuanceDto
 {
     // Thêm trường quan trọng nhất để biết điều chỉnh cho cái nào
     public string TransactionIdOld { get; set; } = null!;
+}
+
+/// <summary>
+/// Response trả về sau khi phát hành / thay thế / điều chỉnh hóa đơn thành công
+/// </summary>
+public class InvoiceIssueResponse
+{
+    public int Code { get; set; }
+    public int Status { get; set; }
+    public string Message { get; set; } = null!;
+    public InvoiceIssueData? Data { get; set; }
+}
+
+public class InvoiceIssueData
+{
+    public string InvoiceNo { get; set; } = string.Empty;
+    public string InvDate { get; set; } = string.Empty;
+    public string TransactionId { get; set; } = string.Empty;
+    public string Macqt { get; set; } = string.Empty;
 }
 
 public class InvoiceExportResponse
