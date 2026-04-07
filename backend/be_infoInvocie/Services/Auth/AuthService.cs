@@ -21,14 +21,13 @@ public class AuthService : IAuthService
     /// Xác thực và lưu phiên làm việc. Trả về SessionId để tạo JWT Token.
     public async Task<(bool IsSuccess, int SessionId)> AuthenticateAndSaveSessionAsync(LoginRequest request)
     {
-        // 1. Giả định xác thực thành công (Sau này call API của EasyInvoice/SInvoice tại đây)
+        //Giả định xác thực thành công (Sau này call API của EasyInvoice/SInvoice tại đây)
         bool isExternalAuthValid = true;
         if (!isExternalAuthValid) return (false, 0);
-
-        // 2. Băm mật khẩu để lưu trữ an toàn
+        
         string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
-        // 3. Logic Upsert: Nếu tồn tại Session cũ thì cập nhật, chưa có thì tạo mới
+        //Nếu tồn tại Session cũ thì cập nhật, chưa có thì tạo mới
         var existingSession = await _repository.GetExistingSessionAsync(request.ProviderId, request.MaDvcs);
         int currentSessionId;
 
@@ -60,8 +59,7 @@ public class AuthService : IAuthService
             var saved = await _repository.SaveSessionAsync(newSession);
             currentSessionId = saved.Id;
         }
-
-        // 4. Lưu Refresh Token để duy trì đăng nhập
+        
         var token = new RefreshToken
         {
             SessionId = currentSessionId,

@@ -86,11 +86,51 @@ export interface IIssueInvoiceRequest {
     products: IIssueProductItem[];
 }
 
+export interface IIssueInvoiceData {
+    invoiceNo: string;
+    invDate: string;
+    transactionId: string;
+    macqt: string;
+}
+
 export interface IIssueInvoiceResponse {
+    code: number;
+    status: number; // 1 = thành công, 0 = thất bại
+    message: string;
+    data: IIssueInvoiceData | null;
+}
+
+export interface IActionInvoiceRequest extends IIssueInvoiceRequest {
+    transactionIdOld: string;
+}
+
+export interface IActionInvoiceResponse {
+    message: string;
+}
+
+export interface ITaxCheckRequest {
+    taxCodes: string[];
+}
+
+export interface ITaxStatusResult {
+    maSoThue: string;
+    masothueId: string;
+    tenCty: string;
+    diaChi: string;
+    tthai: string;
+    trangThaiHoatDong: string;
+    lastUpdate: string;
+    ngayKiemTra: string;
+}
+
+export interface ITaxCheckResponse {
     status: boolean;
     message: string;
-    data?: {
-        invoiceNo: string;
-        [key: string]: unknown;
-    };
+    datas: ITaxStatusResult[];
+}
+
+export interface IExportXmlResponse {
+    status: boolean;
+    message: string;
+    data: string;
 }

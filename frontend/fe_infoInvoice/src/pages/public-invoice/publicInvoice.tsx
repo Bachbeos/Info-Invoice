@@ -2,7 +2,10 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import invoiceService from "../../services/InvoiceService";
 import { ApiError } from "../../lib/apiClient";
+import { useNavigate } from "react-router-dom";
+import { clearToken } from "../../utils/token";
 import "./publicInvoice.scss";
+import type { ITaxStatusResult } from "../../types/invoice";
 
 interface ProductItem {
   id: string;
@@ -18,7 +21,12 @@ interface ProductItem {
 }
 
 export default function PublicInvoice() {
+  const navigate = useNavigate();
   const [transactionID] = useState(crypto.randomUUID());
+  const [actionMode, setActionMode] = useState<"issue" | "replace" | "adjust">(
+    "issue",
+  );
+  const [transactionIdOld, setTransactionIdOld] = useState("");
 
   const [invoiceInfo, setInvoiceInfo] = useState({
     invRef: "",
@@ -70,6 +78,83 @@ export default function PublicInvoice() {
 
   const [payloadResult, setPayloadResult] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const [utilTransactionId, setUtilTransactionId] = useState("");
+  const [taxCodesInput, setTaxCodesInput] = useState("");
+  const [taxResults, setTaxResults] = useState<ITaxStatusResult[]>([]);
+  const [isUtilLoading, setIsUtilLoading] = useState(false);
+
+  const handleLogout = () => {
+    clearToken();
+    navigate("/login", { replace: true });
+  };
+
+  const handleExportXml = async () => {
+    if (!utilTransactionId) return toast.warn("Vui lòng nhập Transaction ID");
+    setIsUtilLoading(true);
+    try {
+      const resp = await invoiceService.exportXml(utilTransactionId);
+      if (resp.status) {
+        const byteCharacters = atob(resp.data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "application/xml" });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `invoice_${utilTransactionId}.xml`);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode?.removeChild(link);
+      } else {
+        toast.error(resp.message || "Export thất bại");
+      }
+    } catch (err) {
+      toast.error("Lỗi khi tải XML");
+    } finally {
+      setIsUtilLoading(false);
+    }
+  };
+
+  const handlePrintPdf = async () => {
+    if (!utilTransactionId) return toast.warn("Vui lòng nhập Transaction ID");
+    setIsUtilLoading(true);
+    try {
+      const resp = await invoiceService.print(utilTransactionId);
+      const url = window.URL.createObjectURL(new Blob([resp as any]));
+      window.open(url, "_blank");
+    } catch (err) {
+      toast.error("Lỗi khi tải PDF");
+    } finally {
+      setIsUtilLoading(false);
+    }
+  };
+
+  const handleCheckTax = async () => {
+    if (!taxCodesInput) return toast.warn("Vui lòng nhập MST");
+    const arr = taxCodesInput
+      .split(/[\n,]+/)
+      .map((x) => x.trim())
+      .filter(Boolean);
+    if (!arr.length) return;
+    setIsUtilLoading(true);
+    try {
+      const resp = await invoiceService.checkTaxStatus({ taxCodes: arr });
+      if (resp.status) {
+        setTaxResults(resp.datas || []);
+        toast.success(resp.message || "Kiểm tra MST thành công");
+      } else {
+        toast.error((resp as any).message || "Kiểm tra MST thất bại");
+      }
+    } catch (err) {
+      toast.error("Lỗi khi check MST");
+    } finally {
+      setIsUtilLoading(false);
+    }
+  };
 
   const calculateSummary = () => {
     let subTotal = 0;
@@ -148,8 +233,7 @@ export default function PublicInvoice() {
       };
     });
 
-    const payload = {
-      transactionID,
+    const basePayload = {
       invRef: invoiceInfo.invRef,
       poNo: invoiceInfo.poNo,
       invSubTotal: subTotal,
@@ -172,15 +256,42 @@ export default function PublicInvoice() {
       products: finalProducts,
     };
 
-    setPayloadResult(JSON.stringify(payload, null, 2));
     setIsLoading(true);
 
     try {
-      const data = await invoiceService.issue(payload);
-      if (data.status) {
-        toast.success(`Phát hành thành công! Số HĐ: ${data.data?.invoiceNo}`);
-      } else {
-        toast.error(`Lỗi: ${data.message}`);
+      if (actionMode === "issue") {
+        const payload = { ...basePayload, transactionID };
+        setPayloadResult(JSON.stringify(payload, null, 2));
+        const data = await invoiceService.issue(payload);
+        if (data.status === 1) {
+          toast.success(
+            `Phát hành thành công! Số HĐ: ${data.data?.invoiceNo || "(chờ cấp)"} — Ngày: ${data.data?.invDate ?? ""}`,
+          );
+        } else {
+          toast.error(`Lỗi ${data.code}: ${data.message}`);
+        }
+      } else if (actionMode === "replace") {
+        if (!transactionIdOld) {
+          toast.error("Vui lòng nhập Mã giao dịch gốc!");
+          setIsLoading(false);
+          return;
+        }
+        const payload = { ...basePayload, transactionID, transactionIdOld };
+        setPayloadResult(JSON.stringify(payload, null, 2));
+        const data = await invoiceService.replace(payload);
+        toast.success((data as any).message || "Thay thế hóa đơn thành công!");
+      } else if (actionMode === "adjust") {
+        if (!transactionIdOld) {
+          toast.error("Vui lòng nhập Mã giao dịch gốc!");
+          setIsLoading(false);
+          return;
+        }
+        const payload = { ...basePayload, transactionID, transactionIdOld };
+        setPayloadResult(JSON.stringify(payload, null, 2));
+        const data = await invoiceService.adjust(payload);
+        toast.success(
+          (data as any).message || "Điều chỉnh hóa đơn thành công!",
+        );
       }
     } catch (err) {
       if (err instanceof ApiError) {
@@ -203,14 +314,83 @@ export default function PublicInvoice() {
           <h3 className="mb-0">
             <span className="brand-text">DAEWOO</span>
             <span className="separator">|</span>
-            Phát hành Hóa đơn Điện tử
+            {actionMode === "issue" && "Phát hành Hóa đơn Điện tử"}
+            {actionMode === "replace" && "Thay thế Hóa đơn"}
+            {actionMode === "adjust" && "Điều chỉnh Hóa đơn"}
           </h3>
           <small className="text-muted">
             Transaction ID: <code>{transactionID}</code>
           </small>
         </div>
-        <span className="badge status-badge">● LIVE</span>
+        <div className="d-flex align-items-center gap-3">
+          <div className="btn-group shadow-sm" role="group">
+            <input
+              type="radio"
+              className="btn-check"
+              name="actionMode"
+              id="btnradio1"
+              autoComplete="off"
+              checked={actionMode === "issue"}
+              onChange={() => setActionMode("issue")}
+            />
+            <label className="btn btn-outline-primary" htmlFor="btnradio1">
+              Phát hành
+            </label>
+
+            <input
+              type="radio"
+              className="btn-check"
+              name="actionMode"
+              id="btnradio2"
+              autoComplete="off"
+              checked={actionMode === "replace"}
+              onChange={() => setActionMode("replace")}
+            />
+            <label className="btn btn-outline-primary" htmlFor="btnradio2">
+              Thay thế
+            </label>
+
+            <input
+              type="radio"
+              className="btn-check"
+              name="actionMode"
+              id="btnradio3"
+              autoComplete="off"
+              checked={actionMode === "adjust"}
+              onChange={() => setActionMode("adjust")}
+            />
+            <label className="btn btn-outline-primary" htmlFor="btnradio3">
+              Điều chỉnh
+            </label>
+          </div>
+          <span className="badge status-badge">● LIVE</span>
+          <button
+            type="button"
+            className="btn btn-outline-danger btn-sm fw-semibold btn-logout"
+            onClick={handleLogout}
+          >
+            Đăng xuất
+          </button>
+        </div>
       </div>
+
+      {(actionMode === "replace" || actionMode === "adjust") && (
+        <div className="alert alert-warning mb-4 d-flex align-items-center gap-3 shadow-sm">
+          <i className="ri-error-warning-line fs-4"></i>
+          <div className="flex-grow-1">
+            <label className="form-label fw-bold mb-1">
+              Mã giao dịch Gốc (Transaction ID cũ){" "}
+              <span className="text-danger">*</span>
+            </label>
+            <input
+              className="form-control"
+              placeholder="Nhập mã giao dịch của hóa đơn cần thay thế/điều chỉnh..."
+              value={transactionIdOld}
+              onChange={(e) => setTransactionIdOld(e.target.value)}
+            />
+          </div>
+        </div>
+      )}
 
       {/* I. Thông tin Hóa đơn */}
       <div className="card inv-card mb-4">
@@ -740,15 +920,6 @@ export default function PublicInvoice() {
       {/* Submit */}
       <div className="d-grid gap-2 d-md-flex justify-content-md-end">
         <button
-          className="btn btn-outline-secondary"
-          onClick={() =>
-            setPayloadResult(JSON.stringify({ transactionID }, null, 2))
-          }
-        >
-          <i className="ri-eye-line me-2" />
-          Xem Payload
-        </button>
-        <button
           className="btn btn-publish btn-lg px-5"
           onClick={handleSubmit}
           disabled={isLoading}
@@ -756,39 +927,132 @@ export default function PublicInvoice() {
           {isLoading ? (
             <>
               <span className="spinner-border spinner-border-sm me-2" />
-              Đang phát hành...
+              Đang xử lý...
             </>
           ) : (
             <>
               <i className="ri-send-plane-fill me-2" />
-              PHÁT HÀNH HÓA ĐƠN
+              {actionMode === "issue" && "PHÁT HÀNH HÓA ĐƠN"}
+              {actionMode === "replace" && "THAY THẾ HÓA ĐƠN"}
+              {actionMode === "adjust" && "ĐIỀU CHỈNH HÓA ĐƠN"}
             </>
           )}
         </button>
       </div>
 
-      {payloadResult && (
-        <div className="mt-4">
-          <div className="d-flex justify-content-between align-items-center mb-2">
-            <label className="form-label fw-bold mb-0">
-              📦 Request Payload:
-            </label>
-            <button
-              className="btn btn-sm btn-outline-secondary"
-              onClick={() => {
-                navigator.clipboard.writeText(payloadResult);
-                toast.info("Đã copy!");
-              }}
-            >
-              <i className="ri-clipboard-line me-1" />
-              Copy
-            </button>
-          </div>
-          <pre className="result-box bg-dark text-success p-3 rounded">
-            {payloadResult}
-          </pre>
+      {/* V. Tiện Ích & Công Cụ */}
+      <div className="card inv-card mt-5 mb-4 border-info">
+        <div className="card-header inv-card-header bg-info text-white">
+          <i className="ri-tools-fill me-2" />
+          V. Tiện Ích & Công Cụ
         </div>
-      )}
+        <div className="card-body">
+          <div className="row">
+            {/* Block 1: Export & Print */}
+            <div className="col-md-6 border-end">
+              <h6 className="fw-bold mb-3">Tải XML & In Hóa Đơn PDF</h6>
+              <div className="mb-3">
+                <label className="form-label small">
+                  Mã Giao Dịch (Transaction ID)
+                </label>
+                <div className="input-group">
+                  <input
+                    className="form-control"
+                    placeholder="Nhập transactionId..."
+                    value={utilTransactionId}
+                    onChange={(e) => setUtilTransactionId(e.target.value)}
+                  />
+                  <button
+                    className="btn btn-outline-secondary"
+                    type="button"
+                    onClick={() => setUtilTransactionId(transactionID)}
+                  >
+                    Dùng ID hiện tại
+                  </button>
+                </div>
+              </div>
+              <div className="d-flex gap-2">
+                <button
+                  className="btn btn-outline-success"
+                  onClick={handleExportXml}
+                  disabled={isUtilLoading}
+                >
+                  <i className="ri-file-download-line me-1" /> Tải XML Base64
+                </button>
+                <button
+                  className="btn btn-outline-danger"
+                  onClick={handlePrintPdf}
+                  disabled={isUtilLoading}
+                >
+                  <i className="ri-printer-line me-1" /> In Hóa Đơn PDF
+                </button>
+              </div>
+            </div>
+
+            {/* Block 2: Check Tax */}
+            <div className="col-md-6">
+              <h6 className="fw-bold mb-3">Kiểm Tra Trạng Thái Thuế</h6>
+              <div className="mb-3">
+                <label className="form-label small">
+                  Danh sách Mã Số Thuế (mỗi MST 1 dòng hoặc cách nhau dấu phẩy)
+                </label>
+                <textarea
+                  className="form-control"
+                  rows={3}
+                  placeholder="0101243150, 0100109106..."
+                  value={taxCodesInput}
+                  onChange={(e) => setTaxCodesInput(e.target.value)}
+                ></textarea>
+              </div>
+              <button
+                className="btn btn-primary"
+                onClick={handleCheckTax}
+                disabled={isUtilLoading}
+              >
+                <i className="ri-search-line me-1" /> Kiểm Tra
+              </button>
+            </div>
+          </div>
+
+          {taxResults.length > 0 && (
+            <div className="mt-4">
+              <h6 className="fw-bold">Kết quả Kiểm Tra:</h6>
+              <div className="table-responsive">
+                <table className="table table-sm table-bordered table-striped mt-2">
+                  <thead className="table-light">
+                    <tr>
+                      <th>Mã Số Thuế</th>
+                      <th>Tên Công Ty</th>
+                      <th>Trạng Thái</th>
+                      <th>Tình Trạng Chi Tiết</th>
+                      <th>Cập nhật lúc</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {taxResults.map((r, i) => (
+                      <tr key={i}>
+                        <td>
+                          <strong>{r.maSoThue}</strong>
+                        </td>
+                        <td>{r.tenCty}</td>
+                        <td>
+                          <span
+                            className={`badge ${r.tthai.includes("00") ? "bg-success" : "bg-warning text-dark"}`}
+                          >
+                            {r.tthai}
+                          </span>
+                        </td>
+                        <td>{r.trangThaiHoatDong}</td>
+                        <td>{r.lastUpdate}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

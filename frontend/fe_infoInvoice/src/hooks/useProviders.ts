@@ -14,8 +14,6 @@ export function useProviders(): UseProvidersResult {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // "cancelled" flag để tránh cập nhật state sau khi component đã unmount
-    // Đây là pattern phổ biến khi dùng useEffect với async
     let cancelled = false;
 
     const fetchProviders = async () => {
