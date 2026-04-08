@@ -1,40 +1,44 @@
 using be_infoInvoice.Core.DTOs;
 using be_infoInvoice.Database.Entities;
 using be_infoInvoice.Interfaces.Invoice;
+using be_infoInvoice.Interfaces.Invoice.Validators;
 
 namespace be_infoInvoice.Services.Invoice;
+
+public enum InvoiceType { Public = 1, Replace = 2, Adjust = 3}
 
 public class InvoiceIssueService : IInvoiceIssueService
 {
     private readonly IInvoiceIssueRepository _repository;
+    private readonly IInvoiceValidator _validator;
 
-    public InvoiceIssueService(IInvoiceIssueRepository repository)
+    public InvoiceIssueService(IInvoiceIssueRepository repository, IInvoiceValidator validator)
     {
         _repository = repository;
+        _validator = validator;
     }
 
-    /// <summary>
-    /// PHÁT HÀNH MỚI: Lưu hóa đơn gốc (InvoiceType = 1)
-    /// </summary>
     public async Task<InvoiceIssueResponse> IssueInvoiceAsync(InvoiceIssuanceDto dto, int sessionId)
     {
-        var invoice = MapBaseInvoice(dto, sessionId);
-        invoice.InvoiceType = 1; // Hóa đơn gốc
 
-        var saved = await _repository.CreateInvoiceAsync(invoice);
-
-        if (!saved)
-        {
+        var (isValid, validationMessage) = _validator.ValidateInvoice(dto);
+        if (!isValid) {
             return new InvoiceIssueResponse
             {
-                Code = 500,
+                Code = 400,
                 Status = 0,
-                Message = "Lưu hóa đơn thất bại. Vui lòng kiểm tra lại dữ liệu.",
-                Data = null
-            };
+                Message = validationMessage
+            }; 
         }
 
-        // TODO: Gọi API nhà cung cấp (EasyInvoice/SInvoice...) để lấy invoiceNo, invDate, macqt thật
+        var invoice = await SaveInvoiceToDbAsync(dto, sessionId, InvoiceType.Public);
+
+        if (invoice == null)
+        {
+            return CreateErrorResponse("Lưu hóa đơn thất bại. Vui lòng kiểm tra lại dữ liệu.");
+        }
+
+        // TODO: Gọi API nhà cung cấp
         return new InvoiceIssueResponse
         {
             Code = 200,
@@ -50,35 +54,38 @@ public class InvoiceIssueService : IInvoiceIssueService
         };
     }
 
-    /// <summary>
-    /// THAY THẾ: Lưu hóa đơn thay thế (InvoiceType = 2)
-    /// </summary>
     public async Task<bool> ReplaceInvoiceAsync(InvoiceReplaceDto dto, int sessionId)
     {
-        var invoice = MapBaseInvoice(dto, sessionId);
-        invoice.InvoiceType = 2;
-        invoice.TransactionIdOld = dto.TransactionIdOld;
-        invoice.NoteDesc = dto.Note;
+        var invoice = await SaveInvoiceToDbAsync(dto, sessionId, InvoiceType.Replace, dto.TransactionIdOld, dto.Note);
 
-        return await _repository.CreateInvoiceAsync(invoice);
+        return invoice != null;
     }
 
-    /// <summary>
-    /// ĐIỀU CHỈNH: Lưu hóa đơn điều chỉnh (InvoiceType = 3)
-    /// </summary>
     public async Task<bool> AdjustInvoiceAsync(InvoiceAdjustDto dto, int sessionId)
     {
-        var invoice = MapBaseInvoice(dto, sessionId);
-        invoice.InvoiceType = 3;
-        invoice.TransactionIdOld = dto.TransactionIdOld;
-        invoice.NoteDesc = dto.Note;
-
-        return await _repository.CreateInvoiceAsync(invoice);
+        var invoice = await SaveInvoiceToDbAsync(dto, sessionId, InvoiceType.Adjust, dto.TransactionIdOld, dto.Note);
+        return invoice != null;
     }
 
-    /// <summary>
-    /// PRIVATE HELPER: Map dữ liệu từ DTO sang Entity (dùng chung cho cả 3 loại hóa đơn)
-    /// </summary>
+    public async Task<Database.Entities.Invoice?> SaveInvoiceToDbAsync(InvoiceIssuanceDto dto, int sessionId, InvoiceType type, string? oldId = null, string? noteDesc = null)
+    {
+        var invoice = MapBaseInvoice(dto, sessionId);
+        invoice.InvoiceType = (sbyte)type;
+        invoice.TransactionIdOld = oldId;
+        invoice.NoteDesc = noteDesc;
+
+        var success = await _repository.CreateInvoiceAsync(invoice);
+        return success ? invoice : null;
+    }
+
+    private static InvoiceIssueResponse CreateErrorResponse(string message) => new()
+    {
+        Code = 500,
+        Status = 0,
+        Message = message,
+        Data = null
+    };
+
     private static Database.Entities.Invoice MapBaseInvoice(InvoiceIssuanceDto dto, int sessionId)
     {
         return new Database.Entities.Invoice

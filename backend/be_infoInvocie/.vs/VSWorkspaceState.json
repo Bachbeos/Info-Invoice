@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\Controllers",
+    "\\Controllers\\Invoice",
+    "\\Core",
+    "\\Core\\DTOs",
+    "\\Interfaces",
+    "\\Interfaces\\Invoice",
+    "\\Services",
+    "\\Services\\Invoice",
+    "\\Services\\Invoice\\Validators"
+  ],
+  "SelectedNode": "\\Interfaces\\Invoice\\IInvoicePrintService.cs",
+  "PreviewInSolutionExplorer": false
+}

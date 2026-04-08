@@ -1,0 +1,188 @@
+[
+  {
+    "ContainingType": "be_infoInvoice.Controllers.Auth.AuthController",
+    "Method": "Login",
+    "RelativePath": "api/auth/login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "be_infoInvoice.Core.DTOs.LoginRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "be_infoInvoice.Controllers.Auth.AuthController",
+    "Method": "GetProviders",
+    "RelativePath": "api/auth/providers",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceIssueController",
+    "Method": "AdjustInvoice",
+    "RelativePath": "api/invoice/adjust",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "be_infoInvoice.Core.DTOs.InvoiceAdjustDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceCheckController",
+    "Method": "CheckTaxStatus",
+    "RelativePath": "api/invoice/check-tax-status",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "be_infoInvoice.Core.DTOs.TaxCheckRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceExportController",
+    "Method": "ExportXml",
+    "RelativePath": "api/invoice/export-xml/{transactionId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "transactionId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceIssueController",
+    "Method": "IssueInvoice",
+    "RelativePath": "api/invoice/issue",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "be_infoInvoice.Core.DTOs.InvoiceIssuanceDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoicePrintController",
+    "Method": "PrintInvoice",
+    "RelativePath": "api/invoice/print/{transactionId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "transactionId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceIssueController",
+    "Method": "ReplaceInvoice",
+    "RelativePath": "api/invoice/replace",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "be_infoInvoice.Core.DTOs.InvoiceReplaceDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "be_infoInvoice.Controllers.TctController",
+    "Method": "GetDetail",
+    "RelativePath": "api/Tct/detail",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "be_infoInvoice.Core.DTOs.TctDetailRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "be_infoInvoice.Controllers.TctController",
+    "Method": "Login",
+    "RelativePath": "api/Tct/login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "be_infoInvoice.Core.DTOs.TctLoginRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "be_infoInvoice.Controllers.TctController",
+    "Method": "SyncInvoices",
+    "RelativePath": "api/Tct/sync",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "be_infoInvoice.Core.DTOs.TctSyncRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "be_infoInvoice.Controllers.TctController",
+    "Method": "GetXml",
+    "RelativePath": "api/Tct/xml",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "be_infoInvoice.Core.DTOs.TctXmlRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

@@ -1,4 +1,6 @@
-﻿namespace be_infoInvoice.Core.DTOs;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace be_infoInvoice.Core.DTOs;
 
 public class LoginRequest
 {

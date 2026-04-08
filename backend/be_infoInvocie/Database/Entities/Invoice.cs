@@ -23,6 +23,11 @@ public class Invoice {
     [Column("paid_tp")] public string PaidTp { get; set; } = "CK";
     [MaxLength(255)]
     [Column("note")] public string? Note { get; set; }
+    [Column("hdNo")] public int HdNo { get; set; }
+    [Column("created_date")] public DateTime CreatedDate { get; set; }
+    [Column("clsf_no")] public string ClsfNo { get; set; }
+    [Column("spcf_no")] public string SpcfNo { get; set; }
+    [Column("template_code")] public string TemplateCode { get; set; }
     [MaxLength(50)]
     [Column("exch_cd")] public string? ExchCd { get; set; }
     [Column("exch_rt")] public decimal ExchRt { get; set; }

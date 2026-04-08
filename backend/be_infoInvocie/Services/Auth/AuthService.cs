@@ -18,57 +18,65 @@ public class AuthService : IAuthService
         return await _repository.GetProvidersAsync();
     }
     
-    /// Xác thực và lưu phiên làm việc. Trả về SessionId để tạo JWT Token.
     public async Task<(bool IsSuccess, int SessionId)> AuthenticateAndSaveSessionAsync(LoginRequest request)
     {
-        //Giả định xác thực thành công (Sau này call API của EasyInvoice/SInvoice tại đây)
+        if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password) || request.Password.Length < 6) {
+            return (false, 0);
+        }
+
         bool isExternalAuthValid = true;
         if (!isExternalAuthValid) return (false, 0);
         
         string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
-        //Nếu tồn tại Session cũ thì cập nhật, chưa có thì tạo mới
-        var existingSession = await _repository.GetExistingSessionAsync(request.ProviderId, request.MaDvcs);
-        int currentSessionId;
+        var session = await _repository.GetExistingSessionAsync(request.ProviderId, request.MaDvcs);
 
-        if (existingSession != null)
+        if (session != null)
         {
-            existingSession.Url = request.Url;
-            existingSession.Username = request.Username;
-            existingSession.Password = hashedPassword;
-            existingSession.TenantId = request.TenantId;
-            existingSession.ApiKey = request.Key;
-            existingSession.CreatedAt = DateTime.Now;
-
-            await _repository.UpdateSessionAsync(existingSession);
-            currentSessionId = existingSession.Id;
+            UpdateSessionProperties(session, request, hashedPassword);
+            await _repository.UpdateSessionAsync(session);
         }
         else
         {
-            var newSession = new InvoiceSession
-            {
-                ProviderId = request.ProviderId,
-                Url = request.Url,
-                MaDvcs = request.MaDvcs,
-                Username = request.Username,
-                Password = hashedPassword,
-                TenantId = request.TenantId,
-                ApiKey = request.Key,
-                CreatedAt = DateTime.Now
-            };
-            var saved = await _repository.SaveSessionAsync(newSession);
-            currentSessionId = saved.Id;
+            session = CreateNewSession(request, hashedPassword);
+            session = await _repository.SaveSessionAsync(session);
         }
-        
+        await CreateAndSaveRefreshToken(session.Id);
+        return (true, session.Id);
+    }
+
+    private void UpdateSessionProperties(InvoiceSession session, LoginRequest request, string hashedPassword) {
+        session.Url = request.Url;
+        session.Username = request.Username;
+        session.Password = hashedPassword;
+        session.TenantId = request.TenantId;
+        session.ApiKey = request.Key;
+        session.CreatedAt = DateTime.Now;
+    }
+
+    private InvoiceSession CreateNewSession(LoginRequest request, string hashedPassword) {
+        return new InvoiceSession
+        {
+            ProviderId = request.ProviderId,
+            Url = request.Url,
+            MaDvcs = request.MaDvcs,
+            Username = request.Username,
+            Password = hashedPassword,
+            TenantId = request.TenantId,
+            ApiKey = request.Key,
+            CreatedAt = DateTime.Now
+        };
+    }
+
+    private async Task CreateAndSaveRefreshToken(int sessionId)
+    {
         var token = new RefreshToken
         {
-            SessionId = currentSessionId,
+            SessionId = sessionId,
             Token = Guid.NewGuid().ToString(),
             ExpiresAt = DateTime.Now.AddDays(7),
             CreatedAt = DateTime.Now
         };
         await _repository.SaveRefreshTokenAsync(token);
-
-        return (true, currentSessionId);
     }
 }
