@@ -1,16 +1,19 @@
 using be_infoInvoice.Core.DTOs;
 using be_infoInvoice.Database.Entities;
 using be_infoInvoice.Interfaces.Auth;
+using be_infoInvoice.Interfaces;
 
 namespace be_infoInvoice.Services.Auth;
 
 public class AuthService : IAuthService
 {
     private readonly IAuthRepository _repository;
+    private readonly IJwtService _jwtService;
 
-    public AuthService(IAuthRepository repository)
+    public AuthService(IAuthRepository repository, IJwtService jwtService)
     {
         _repository = repository;
+        _jwtService = jwtService;
     }
 
     public async Task<IEnumerable<Provider>> GetAvailableProvidersAsync()
@@ -18,31 +21,50 @@ public class AuthService : IAuthService
         return await _repository.GetProvidersAsync();
     }
     
-    public async Task<(bool IsSuccess, int SessionId)> AuthenticateAndSaveSessionAsync(LoginRequest request)
+    public async Task<(bool IsSuccess, object Data)> AuthenticateAndSaveSessionAsync(LoginRequest request)
     {
         if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password) || request.Password.Length < 6) {
-            return (false, 0);
+            return (false, new { code = 401, message = "Thông tin đăng nhập hoặc kết nối không chính xác." });
         }
-
-        bool isExternalAuthValid = true;
-        if (!isExternalAuthValid) return (false, 0);
-        
-        string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
         var session = await _repository.GetExistingSessionAsync(request.ProviderId, request.MaDvcs);
 
         if (session != null)
         {
-            UpdateSessionProperties(session, request, hashedPassword);
+            if (session.Username != request.Username)
+            {
+                return (false, new { code = 401, message = "Tài khoản không khớp trên hệ thống." });
+            }
+
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, session.Password))
+            {
+                return (false, new { code = 401, message = "Mật khẩu không chính xác." });
+            }
+
+            session.Url = request.Url;
+            session.TenantId = request.TenantId;
+            session.ApiKey = request.Key;
+            
             await _repository.UpdateSessionAsync(session);
         }
         else
         {
+            // return (false, new { code = 401, message = "Tài khoản chưa tồn tại trong hệ thống demo." });
+
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
             session = CreateNewSession(request, hashedPassword);
             session = await _repository.SaveSessionAsync(session);
         }
         await CreateAndSaveRefreshToken(session.Id);
-        return (true, session.Id);
+
+        var token = _jwtService.GenerateToken(session.Id);
+        return (true, new
+        {
+            code        = 200,
+            message     = "Kết nối nhà cung cấp thành công!",
+            accessToken = token,
+            timestamp   = DateTime.Now
+        });
     }
 
     private void UpdateSessionProperties(InvoiceSession session, LoginRequest request, string hashedPassword) {

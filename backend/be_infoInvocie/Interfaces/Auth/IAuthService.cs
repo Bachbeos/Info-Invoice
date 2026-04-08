@@ -6,5 +6,5 @@ namespace be_infoInvoice.Interfaces.Auth;
 public interface IAuthService
 {
     Task<IEnumerable<Provider>> GetAvailableProvidersAsync();
-    Task<(bool IsSuccess, int SessionId)> AuthenticateAndSaveSessionAsync(LoginRequest request);
+    Task<(bool IsSuccess, object Data)> AuthenticateAndSaveSessionAsync(LoginRequest request);
 }

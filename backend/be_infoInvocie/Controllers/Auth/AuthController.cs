@@ -1,6 +1,5 @@
 using be_infoInvoice.Core.DTOs;
 using be_infoInvoice.Interfaces.Auth;
-using be_infoInvoice.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace be_infoInvoice.Controllers.Auth;
@@ -10,12 +9,10 @@ namespace be_infoInvoice.Controllers.Auth;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
-    private readonly IJwtService _jwtService;
 
-    public AuthController(IAuthService authService, IJwtService jwtService)
+    public AuthController(IAuthService authService)
     {
         _authService = authService;
-        _jwtService  = jwtService;
     }
 
     // GET: api/auth/providers
@@ -34,16 +31,21 @@ public class AuthController : ControllerBase
 
         if (result.IsSuccess)
         {
-            var token = _jwtService.GenerateToken(result.SessionId);
-            return Ok(new
-            {
-                code        = 200,
-                message     = "Kết nối nhà cung cấp thành công!",
-                accessToken = token,
-                timestamp   = DateTime.Now
-            });
+            return Ok(result.Data);
         }
 
-        return Unauthorized(new { code = 401, message = "Thông tin đăng nhập hoặc kết nối không chính xác." });
+        return Unauthorized(result.Data);
+    }
+
+    // GET: api/auth/generate-hash (DÙNG ĐỂ TEST SINH MẬT KHẨU BCRYPT TẠM THỜI)
+    [HttpGet("generate-hash")]
+    public IActionResult GenerateHash([FromQuery] string password)
+    {
+        if (string.IsNullOrEmpty(password)) return BadRequest("Nhập password.");
+        return Ok(new
+        {
+            password = password,
+            bcryptHash = BCrypt.Net.BCrypt.HashPassword(password)
+        });
     }
 }
