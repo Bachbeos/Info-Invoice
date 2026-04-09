@@ -31,21 +31,9 @@ public class AuthController : ControllerBase
 
         if (result.IsSuccess)
         {
-            return Ok(result.Data);
+            return Ok(result);
         }
 
-        return Unauthorized(result.Data);
-    }
-
-    // GET: api/auth/generate-hash (DÙNG ĐỂ TEST SINH MẬT KHẨU BCRYPT TẠM THỜI)
-    [HttpGet("generate-hash")]
-    public IActionResult GenerateHash([FromQuery] string password)
-    {
-        if (string.IsNullOrEmpty(password)) return BadRequest("Nhập password.");
-        return Ok(new
-        {
-            password = password,
-            bcryptHash = BCrypt.Net.BCrypt.HashPassword(password)
-        });
+        return Unauthorized(result);
     }
 }

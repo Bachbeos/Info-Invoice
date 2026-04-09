@@ -18,40 +18,85 @@ public class InvoiceIssueService : IInvoiceIssueService
         _validator = validator;
     }
 
-    public async Task<InvoiceIssueResponse> IssueInvoiceAsync(InvoiceIssuanceDto dto, int sessionId)
+    public async Task<ApiResult<InvoiceIssueResponse>> IssueInvoiceAsync(InvoiceIssuanceDto dto, int sessionId)
     {
 
+        //var (isValid, validationMessage) = _validator.ValidateInvoice(dto);
+        //if (!isValid) {
+        //    return new InvoiceIssueResponse
+        //    {
+        //        Code = 400,
+        //        Status = 0,
+        //        Message = validationMessage
+        //    }; 
+        //}
+
+        //var session = await _repository.GetSessionByIdAsync(sessionId);
+        //if (session == null)
+        //{
+        //    return new InvoiceIssueResponse { Code = 401, Message = "Phiên làm việc không hợp lệ." };
+        //}
+
+        //var invoice = await SaveInvoiceToDbAsync(dto, sessionId, InvoiceType.Public);
+        //if (invoice == null)
+        //{
+        //    return new InvoiceIssueResponse { Code = 500, Message = "Lỗi lưu dữ liệu hóa đơn." };
+        //}
+
+        //var invoice = await SaveInvoiceToDbAsync(dto, sessionId, InvoiceType.Public);
+        //if (invoice == null)
+        //{
+        //    return CreateErrorResponse("Lưu hóa đơn thất bại. Vui lòng kiểm tra lại dữ liệu.");
+        //}
+
+        // TODO: Gọi API nhà cung cấp
+        //return new InvoiceIssueResponse
+        //{
+        //    Code = 200,
+        //    Status = 1,
+        //    Message = "Lưu hóa đơn vào hệ thống thành công!",
+        //    Data = new InvoiceIssueData
+        //    {
+        //        InvoiceNo     = string.Empty,
+        //        InvDate       = DateTime.Now.ToString("yyyy-MM-dd"),
+        //        TransactionId = dto.TransactionId,
+        //        Macqt         = string.Empty
+        //    }
+        //};
+
         var (isValid, validationMessage) = _validator.ValidateInvoice(dto);
-        if (!isValid) {
-            return new InvoiceIssueResponse
-            {
-                Code = 400,
-                Status = 0,
-                Message = validationMessage
-            }; 
+        if (!isValid)
+        {
+            return ApiResult<InvoiceIssueResponse>.Failure(400, validationMessage);
+        }
+
+        var session = await _repository.GetSessionByIdAsync(sessionId);
+        if (session == null)
+        {
+            return ApiResult<InvoiceIssueResponse>.Failure(401, "Phiên làm việc không hợp lệ hoặc đã hết hạn.");
         }
 
         var invoice = await SaveInvoiceToDbAsync(dto, sessionId, InvoiceType.Public);
-
         if (invoice == null)
         {
-            return CreateErrorResponse("Lưu hóa đơn thất bại. Vui lòng kiểm tra lại dữ liệu.");
+            return ApiResult<InvoiceIssueResponse>.Failure(500, "Lỗi hệ thống: Không thể lưu dữ liệu hóa đơn.");
         }
 
-        // TODO: Gọi API nhà cung cấp
-        return new InvoiceIssueResponse
+        var responseData = new InvoiceIssueResponse
         {
             Code = 200,
             Status = 1,
             Message = "Lưu hóa đơn vào hệ thống thành công!",
             Data = new InvoiceIssueData
             {
-                InvoiceNo     = string.Empty,
-                InvDate       = DateTime.Now.ToString("yyyy-MM-dd"),
+                InvoiceNo = string.Empty,
+                InvDate = DateTime.Now.ToString("yyyy-MM-dd"),
                 TransactionId = dto.TransactionId,
-                Macqt         = string.Empty
+                Macqt = string.Empty
             }
         };
+
+        return ApiResult<InvoiceIssueResponse>.Success(responseData, "Phát hành hóa đơn thành công!");
     }
 
     public async Task<bool> ReplaceInvoiceAsync(InvoiceReplaceDto dto, int sessionId)
@@ -78,14 +123,6 @@ public class InvoiceIssueService : IInvoiceIssueService
         return success ? invoice : null;
     }
 
-    private static InvoiceIssueResponse CreateErrorResponse(string message) => new()
-    {
-        Code = 500,
-        Status = 0,
-        Message = message,
-        Data = null
-    };
-
     private static Database.Entities.Invoice MapBaseInvoice(InvoiceIssuanceDto dto, int sessionId)
     {
         return new Database.Entities.Invoice
@@ -107,6 +144,7 @@ public class InvoiceIssueService : IInvoiceIssueService
             BankName        = dto.BankName,
             Status          = false,
             CreatedAt       = DateTime.Now,
+            HdNo            = dto.HdNo ?? 0,
 
             Customer = new InvoiceCustomer
             {

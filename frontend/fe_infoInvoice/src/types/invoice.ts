@@ -73,7 +73,7 @@ export interface IIssueInvoiceRequest {
     invTotalAmount: number;
     paidTp: string;
     note: string;
-    hdNo: string;
+    hdNo: number;
     createdDate: string;
     clsfNo: string;
     spcfNo: string;

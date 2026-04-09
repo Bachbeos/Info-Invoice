@@ -18,9 +18,10 @@ export function useLogin(): UseLoginResult {
     setIsLoading(true);
     try {
       const response = await apiClient.post<AuthResponse>("/auth/login", body);
-      if (response.code === 200 && response.accessToken) {
-        setToken(response.accessToken);
+      if (response.code === 200 && response.isSuccess) {
+        setToken(response.data.accessToken);
         navigate("/public-invoice");
+        showToast("Đăng nhập thành công vào hệ thống", "success")
       }
     } catch (error) {
       const message =

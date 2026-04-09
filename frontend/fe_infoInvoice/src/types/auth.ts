@@ -8,10 +8,13 @@ export interface AuthRequest {
 }
 
 export interface AuthResponse {
-  message: string;
+  isSuccess: boolean;
   code: number;
-  accessToken: string;
-  timestamp: string;
+  message: string;
+  data: {
+    accessToken: string;
+  };
+  timeStamp: string;
 }
 
 export interface AuthError {

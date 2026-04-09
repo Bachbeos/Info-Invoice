@@ -2,18 +2,19 @@ using be_infoInvoice.Database;
 using be_infoInvoice.Interfaces;
 using be_infoInvoice.Interfaces.Auth;
 using be_infoInvoice.Interfaces.Invoice;
+using be_infoInvoice.Interfaces.Invoice.Validators;
+using be_infoInvoice.Repositories;
 using be_infoInvoice.Repositories.Auth;
 using be_infoInvoice.Repositories.Invoice;
+using be_infoInvoice.Services;
 using be_infoInvoice.Services.Auth;
+using be_infoInvoice.Services.Auth.Infrastructure;
 using be_infoInvoice.Services.Invoice;
-using Microsoft.EntityFrameworkCore;
+using be_infoInvoice.Services.Invoice.Validators;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using be_infoInvoice.Repositories;
-using be_infoInvoice.Services;
-using be_infoInvoice.Interfaces.Invoice.Validators;
-using be_infoInvoice.Services.Invoice.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -44,13 +47,15 @@ builder.Services.AddScoped<ITctRepository, TctRepository>();
 builder.Services.AddScoped<ITctService, TctService>();
 
 builder.Services.AddScoped<IInvoiceValidator, InvoiceValidator>();
+builder.Services.AddScoped<IUserContext, UserContext>();
+
 
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin()   // Cho phép mọi nguồn (Domain)
+        policy.AllowAnyOrigin()   // Cho phép mọi domain
             .AllowAnyMethod()  
             .AllowAnyHeader();  
     });

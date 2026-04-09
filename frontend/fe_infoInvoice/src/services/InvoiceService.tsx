@@ -1,6 +1,8 @@
 import { apiClient } from "../lib/apiClient";
 import endpoint from "../configs/urls";
-import type { IProvider, IIssueInvoiceRequest, IIssueInvoiceResponse, IActionInvoiceRequest, IActionInvoiceResponse, ITaxCheckRequest, ITaxCheckResponse, IExportXmlResponse } from "../types/invoice";
+import type { IProvider, ITaxCheckRequest, ITaxCheckResponse, IExportXmlResponse } from "../types/invoice";
+import type { IActionInvoiceRequest, IActionInvoiceResponse, IIssueInvoiceRequest, IIssueInvoiceResponse } from "../types/invoice-action";
+
 
 const invoiceService = {
   getProviders: () => apiClient.get<IProvider[]>(endpoint.invoice.providers),

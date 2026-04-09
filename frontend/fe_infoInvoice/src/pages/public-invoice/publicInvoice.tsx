@@ -260,44 +260,50 @@ export default function PublicInvoice() {
 
     try {
       if (actionMode === "issue") {
-        const payload = { ...basePayload, transactionID };
+        const payload = { ...basePayload, transactionId: transactionID, hdNo: invoiceInfo.hdNo ? Number(invoiceInfo.hdNo) : null };
         setPayloadResult(JSON.stringify(payload, null, 2));
-        const data = await invoiceService.issue(payload);
-        if (data.status === 1) {
+
+        const res = await invoiceService.issue(payload);
+
+        if (res.isSuccess) {
           toast.success(
-            `Phát hành thành công! Số HĐ: ${data.data?.invoiceNo || "(chờ cấp)"} — Ngày: ${data.data?.invDate ?? ""}`,
+            `Phát hành thành công! Số HĐ: ${res.data?.invoiceNo || "(chờ cấp)"} — Ngày: ${res.data?.invDate || ""}`
           );
         } else {
-          toast.error(`Lỗi ${data.code}: ${data.message}`);
+          toast.error(`Lỗi ${res.code}: ${res.message}`);
         }
-      } else if (actionMode === "replace") {
+
+      } else if (actionMode === "replace" || actionMode === "adjust") {
         if (!transactionIdOld) {
           toast.error("Vui lòng nhập Mã giao dịch gốc!");
           setIsLoading(false);
           return;
         }
-        const payload = { ...basePayload, transactionID, transactionIdOld };
+
+        const payload = {
+          ...basePayload,
+          transactionId: transactionID,
+          hdNo: invoiceInfo.hdNo ? Number(invoiceInfo.hdNo) : null,
+          transactionIdOld
+        };
         setPayloadResult(JSON.stringify(payload, null, 2));
-        const data = await invoiceService.replace(payload);
-        toast.success((data as any).message || "Thay thế hóa đơn thành công!");
-      } else if (actionMode === "adjust") {
-        if (!transactionIdOld) {
-          toast.error("Vui lòng nhập Mã giao dịch gốc!");
-          setIsLoading(false);
-          return;
+
+        const res = actionMode === "replace"
+          ? await invoiceService.replace(payload)
+          : await invoiceService.adjust(payload);
+
+        if (res.isSuccess) {
+          toast.success(res.message || `${actionMode === "replace" ? "Thay thế" : "Điều chỉnh"} hóa đơn thành công!`);
+        } else {
+          toast.error(`Lỗi ${res.code}: ${res.message}`);
         }
-        const payload = { ...basePayload, transactionID, transactionIdOld };
-        setPayloadResult(JSON.stringify(payload, null, 2));
-        const data = await invoiceService.adjust(payload);
-        toast.success(
-          (data as any).message || "Điều chỉnh hóa đơn thành công!",
-        );
       }
     } catch (err) {
       if (err instanceof ApiError) {
-        toast.error(`Lỗi ${err.status}: ${err.message}`);
+        toast.error(`Lỗi hệ thống (${err.status}): ${err.message}`);
       } else {
-        toast.error("Không thể kết nối tới server. Vui lòng thử lại.");
+        console.error("Submit Error:", err);
+        toast.error("Không thể kết nối tới server. Vui lòng kiểm tra lại đường truyền.");
       }
     } finally {
       setIsLoading(false);

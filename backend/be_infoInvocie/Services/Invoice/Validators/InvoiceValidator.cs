@@ -7,9 +7,6 @@ public class InvoiceValidator : IInvoiceValidator
 {
     public (bool IsValid, string Message) ValidateInvoice(InvoiceIssuanceDto dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.TransactionId))
-            return (false, "Mã giao dịch (TransactionId) không được để trống.");
-
         if (dto.Customer == null)
             return (false, "Thông tin khách hàng không được để trống.");
 

@@ -21,24 +21,23 @@ public class AuthService : IAuthService
         return await _repository.GetProvidersAsync();
     }
     
-    public async Task<(bool IsSuccess, object Data)> AuthenticateAndSaveSessionAsync(LoginRequest request)
+    public async Task<ApiResult<object>> AuthenticateAndSaveSessionAsync(LoginRequest request)
     {
         if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password) || request.Password.Length < 6) {
-            return (false, new { code = 401, message = "Thông tin đăng nhập hoặc kết nối không chính xác." });
+            return ApiResult<object>.Failure(401, "Thông tin đăng nhập hoặc kết nối không chính xác");
         }
 
         var session = await _repository.GetExistingSessionAsync(request.ProviderId, request.MaDvcs);
-
         if (session != null)
         {
             if (session.Username != request.Username)
             {
-                return (false, new { code = 401, message = "Tài khoản không khớp trên hệ thống." });
+                return ApiResult<object>.Failure(401, "Thông tin đăng nhập hoặc kết nối không chính xác");
             }
 
             if (!BCrypt.Net.BCrypt.Verify(request.Password, session.Password))
             {
-                return (false, new { code = 401, message = "Mật khẩu không chính xác." });
+                return ApiResult<object>.Failure(401, "Thông tin đăng nhập hoặc kết nối không chính xác");
             }
 
             session.Url = request.Url;
@@ -49,46 +48,41 @@ public class AuthService : IAuthService
         }
         else
         {
-            // return (false, new { code = 401, message = "Tài khoản chưa tồn tại trong hệ thống demo." });
+            return ApiResult<object>.Failure(401, "Thông tin đăng nhập hoặc kết nối không chính xác");
 
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
-            session = CreateNewSession(request, hashedPassword);
-            session = await _repository.SaveSessionAsync(session);
+            //string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            //session = CreateNewSession(request, hashedPassword);
+            //session = await _repository.SaveSessionAsync(session);
         }
         await CreateAndSaveRefreshToken(session.Id);
 
         var token = _jwtService.GenerateToken(session.Id);
-        return (true, new
-        {
-            code        = 200,
-            message     = "Kết nối nhà cung cấp thành công!",
-            accessToken = token,
-            timestamp   = DateTime.Now
-        });
+
+        return ApiResult<object>.Success(new {AccessToken  = token}, "Kết nối nhà cung cấp thành công!");
     }
 
-    private void UpdateSessionProperties(InvoiceSession session, LoginRequest request, string hashedPassword) {
-        session.Url = request.Url;
-        session.Username = request.Username;
-        session.Password = hashedPassword;
-        session.TenantId = request.TenantId;
-        session.ApiKey = request.Key;
-        session.CreatedAt = DateTime.Now;
-    }
+    //private void UpdateSessionProperties(InvoiceSession session, LoginRequest request, string hashedPassword) {
+    //    session.Url = request.Url;
+    //    session.Username = request.Username;
+    //    session.Password = hashedPassword;
+    //    session.TenantId = request.TenantId;
+    //    session.ApiKey = request.Key;
+    //    session.CreatedAt = DateTime.Now;
+    //}
 
-    private InvoiceSession CreateNewSession(LoginRequest request, string hashedPassword) {
-        return new InvoiceSession
-        {
-            ProviderId = request.ProviderId,
-            Url = request.Url,
-            MaDvcs = request.MaDvcs,
-            Username = request.Username,
-            Password = hashedPassword,
-            TenantId = request.TenantId,
-            ApiKey = request.Key,
-            CreatedAt = DateTime.Now
-        };
-    }
+    //private InvoiceSession CreateNewSession(LoginRequest request, string hashedPassword) {
+    //    return new InvoiceSession
+    //    {
+    //        ProviderId = request.ProviderId,
+    //        Url = request.Url,
+    //        MaDvcs = request.MaDvcs,
+    //        Username = request.Username,
+    //        Password = hashedPassword,
+    //        TenantId = request.TenantId,
+    //        ApiKey = request.Key,
+    //        CreatedAt = DateTime.Now
+    //    };
+    //}
 
     private async Task CreateAndSaveRefreshToken(int sessionId)
     {

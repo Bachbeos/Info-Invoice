@@ -19,6 +19,8 @@ public class AuthRepository : IAuthRepository
         return await _context.Providers.OrderBy(p => p.Name).ToListAsync();
     }
 
+
+
     public async Task<InvoiceSession?> GetExistingSessionAsync(int providerId, string maDvcs)
     {
         return await _context.InvoiceSessions
