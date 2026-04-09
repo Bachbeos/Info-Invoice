@@ -20,9 +20,9 @@ public class InvoiceIssueRepository : IInvoiceIssueRepository
         return await _context.SaveChangesAsync() > 0;
     }
 
-    public async Task<InvoiceSession?> GetSessionByIdAsync(int sessionId)
+    public async Task<UserAccessConfig?> GetFirstAccessConfigAsync(int userId)
     {
-        return await _context.InvoiceSessions
-            .FirstOrDefaultAsync(s => s.Id == sessionId);
+        return await _context.UserAccessConfigs
+            .FirstOrDefaultAsync(c => c.UserId == userId);
     }
 }

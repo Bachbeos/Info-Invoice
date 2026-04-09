@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace be_infoInvoice.Database.Entities;
 
@@ -6,8 +6,8 @@ namespace be_infoInvoice.Database.Entities;
 public class RefreshToken
 {
     public int Id { get; set; }
-    [Column("session_id")]
-    public int SessionId { get; set; }
+    [Column("user_id")]
+    public int UserId { get; set; }
     public string Token { get; set; } = null!;
     [Column("expires_at")]
     public DateTime ExpiresAt { get; set; }
@@ -16,6 +16,6 @@ public class RefreshToken
     [Column("created_at")]
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     
-    [ForeignKey("SessionId")]
-    public InvoiceSession? Session { get; set; }
+    [ForeignKey("UserId")]
+    public User? User { get; set; }
 }

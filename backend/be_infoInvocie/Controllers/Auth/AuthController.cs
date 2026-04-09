@@ -36,4 +36,16 @@ public class AuthController : ControllerBase
 
         return Unauthorized(result);
     }
+
+    // GET: api/auth/provider-configs
+    [HttpGet("provider-configs")]
+    public async Task<IActionResult> GetProviderConfigs([FromQuery] string username, [FromQuery] int providerId)
+    {
+        if (string.IsNullOrEmpty(username) || providerId <= 0)
+        {
+            return BadRequest(new { message = "Thiếu thông tin username hoặc providerId hợp lệ" });
+        }
+        var configs = await _authService.GetUserSuggestionsAsync(username, providerId);
+        return Ok(configs);
+    }
 }

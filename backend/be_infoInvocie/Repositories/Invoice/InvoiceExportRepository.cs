@@ -14,9 +14,9 @@ public class InvoiceExportRepository : IInvoiceExportRepository
         _context = context;
     }
 
-    public async Task<InvoiceSession?> GetSessionByIdAsync(int sessionId)
+    public async Task<UserAccessConfig?> GetFirstAccessConfigAsync(int userId)
     {
-        return await _context.InvoiceSessions
-            .FirstOrDefaultAsync(s => s.Id == sessionId);
+        return await _context.UserAccessConfigs
+            .FirstOrDefaultAsync(s => s.UserId == userId);
     }
 }

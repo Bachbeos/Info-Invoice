@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace be_infoInvoice.Database.Entities;
 
@@ -7,9 +7,6 @@ public class TaxCheckHistory
 {
     [Column("id")]
     public int Id { get; set; }
-
-    [Column("session_id")]
-    public int SessionId { get; set; }
 
     [Column("tax_code")]
     public string TaxCode { get; set; } = null!;
@@ -32,6 +29,4 @@ public class TaxCheckHistory
     [Column("checked_at")]
     public DateTime CheckedAt { get; set; } = DateTime.Now;
 
-    // Navigation property
-    public virtual InvoiceSession Session { get; set; } = null!;
 }

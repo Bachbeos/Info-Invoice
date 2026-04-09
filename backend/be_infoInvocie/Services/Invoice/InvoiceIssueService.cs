@@ -18,65 +18,20 @@ public class InvoiceIssueService : IInvoiceIssueService
         _validator = validator;
     }
 
-    public async Task<ApiResult<InvoiceIssueResponse>> IssueInvoiceAsync(InvoiceIssuanceDto dto, int sessionId)
+    public async Task<ApiResult<InvoiceIssueResponse>> IssueInvoiceAsync(InvoiceIssuanceDto dto, int userId, int taxId)
     {
-
-        //var (isValid, validationMessage) = _validator.ValidateInvoice(dto);
-        //if (!isValid) {
-        //    return new InvoiceIssueResponse
-        //    {
-        //        Code = 400,
-        //        Status = 0,
-        //        Message = validationMessage
-        //    }; 
-        //}
-
-        //var session = await _repository.GetSessionByIdAsync(sessionId);
-        //if (session == null)
-        //{
-        //    return new InvoiceIssueResponse { Code = 401, Message = "Phiên làm việc không hợp lệ." };
-        //}
-
-        //var invoice = await SaveInvoiceToDbAsync(dto, sessionId, InvoiceType.Public);
-        //if (invoice == null)
-        //{
-        //    return new InvoiceIssueResponse { Code = 500, Message = "Lỗi lưu dữ liệu hóa đơn." };
-        //}
-
-        //var invoice = await SaveInvoiceToDbAsync(dto, sessionId, InvoiceType.Public);
-        //if (invoice == null)
-        //{
-        //    return CreateErrorResponse("Lưu hóa đơn thất bại. Vui lòng kiểm tra lại dữ liệu.");
-        //}
-
-        // TODO: Gọi API nhà cung cấp
-        //return new InvoiceIssueResponse
-        //{
-        //    Code = 200,
-        //    Status = 1,
-        //    Message = "Lưu hóa đơn vào hệ thống thành công!",
-        //    Data = new InvoiceIssueData
-        //    {
-        //        InvoiceNo     = string.Empty,
-        //        InvDate       = DateTime.Now.ToString("yyyy-MM-dd"),
-        //        TransactionId = dto.TransactionId,
-        //        Macqt         = string.Empty
-        //    }
-        //};
-
         var (isValid, validationMessage) = _validator.ValidateInvoice(dto);
         if (!isValid)
         {
             return ApiResult<InvoiceIssueResponse>.Failure(400, validationMessage);
         }
 
-        var session = await _repository.GetSessionByIdAsync(sessionId);
-        if (session == null)
+        if (taxId <= 0)
         {
-            return ApiResult<InvoiceIssueResponse>.Failure(401, "Phiên làm việc không hợp lệ hoặc đã hết hạn.");
+            return ApiResult<InvoiceIssueResponse>.Failure(401, "Vui lòng đăng nhập lại để xác thực mã số thuế.");
         }
 
-        var invoice = await SaveInvoiceToDbAsync(dto, sessionId, InvoiceType.Public);
+        var invoice = await SaveInvoiceToDbAsync(dto, userId, taxId, InvoiceType.Public);
         if (invoice == null)
         {
             return ApiResult<InvoiceIssueResponse>.Failure(500, "Lỗi hệ thống: Không thể lưu dữ liệu hóa đơn.");
@@ -99,22 +54,23 @@ public class InvoiceIssueService : IInvoiceIssueService
         return ApiResult<InvoiceIssueResponse>.Success(responseData, "Phát hành hóa đơn thành công!");
     }
 
-    public async Task<bool> ReplaceInvoiceAsync(InvoiceReplaceDto dto, int sessionId)
+    public async Task<bool> ReplaceInvoiceAsync(InvoiceReplaceDto dto, int userId, int taxId)
     {
-        var invoice = await SaveInvoiceToDbAsync(dto, sessionId, InvoiceType.Replace, dto.TransactionIdOld, dto.Note);
-
+        if (taxId <= 0) return false;
+        var invoice = await SaveInvoiceToDbAsync(dto, userId, taxId, InvoiceType.Replace, dto.TransactionIdOld, dto.Note);
         return invoice != null;
     }
 
-    public async Task<bool> AdjustInvoiceAsync(InvoiceAdjustDto dto, int sessionId)
+    public async Task<bool> AdjustInvoiceAsync(InvoiceAdjustDto dto, int userId, int taxId)
     {
-        var invoice = await SaveInvoiceToDbAsync(dto, sessionId, InvoiceType.Adjust, dto.TransactionIdOld, dto.Note);
+        if (taxId <= 0) return false;
+        var invoice = await SaveInvoiceToDbAsync(dto, userId, taxId, InvoiceType.Adjust, dto.TransactionIdOld, dto.Note);
         return invoice != null;
     }
 
-    public async Task<Database.Entities.Invoice?> SaveInvoiceToDbAsync(InvoiceIssuanceDto dto, int sessionId, InvoiceType type, string? oldId = null, string? noteDesc = null)
+    public async Task<Database.Entities.Invoice?> SaveInvoiceToDbAsync(InvoiceIssuanceDto dto, int userId, int taxId, InvoiceType type, string? oldId = null, string? noteDesc = null)
     {
-        var invoice = MapBaseInvoice(dto, sessionId);
+        var invoice = MapBaseInvoice(dto, userId, taxId);
         invoice.InvoiceType = (sbyte)type;
         invoice.TransactionIdOld = oldId;
         invoice.NoteDesc = noteDesc;
@@ -123,11 +79,12 @@ public class InvoiceIssueService : IInvoiceIssueService
         return success ? invoice : null;
     }
 
-    private static Database.Entities.Invoice MapBaseInvoice(InvoiceIssuanceDto dto, int sessionId)
+    private static Database.Entities.Invoice MapBaseInvoice(InvoiceIssuanceDto dto, int userId, int taxId)
     {
         return new Database.Entities.Invoice
         {
-            SessionId       = sessionId,
+            UserId          = userId,
+            TaxId           = taxId,
             TransactionId   = dto.TransactionId,
             InvRef          = dto.InvRef,
             PoNo            = dto.PoNo,

@@ -13,8 +13,17 @@ public class InvoiceCheckService : IInvoiceCheckService
         _repository = repository;
     }
 
-    public async Task<TaxCheckResponse> CheckTaxStatusAsync(TaxCheckRequest request, int sessionId)
+    public async Task<TaxCheckResponse> CheckTaxStatusAsync(TaxCheckRequest request, int userId, int taxId)
     {
+        if (taxId <= 0)
+        {
+            return new TaxCheckResponse
+            {
+                Status = false,
+                Message = "Vui lòng đăng nhập lại để xác thực mã số thuế."
+            };
+        }
+
         // 1. Validate số lượng MST (Tối đa 100 theo tài liệu)
         if (request.TaxCodes == null || request.TaxCodes.Count == 0)
             return new TaxCheckResponse { Status = false, Message = "Danh sách MST trống." };
@@ -38,7 +47,7 @@ public class InvoiceCheckService : IInvoiceCheckService
         // 3. Map sang Entity để lưu lịch sử
         var historyEntities = apiResults.Select(r => new TaxCheckHistory
         {
-            SessionId     = sessionId,
+            // UserId        = userId,
             TaxCode       = r.MaSoThue,
             CompanyName   = r.TenCty,
             Address       = r.DiaChi,

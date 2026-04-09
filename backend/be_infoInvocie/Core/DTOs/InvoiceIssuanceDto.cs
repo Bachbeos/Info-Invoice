@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace be_infoInvoice.Core.DTOs;
 
@@ -15,9 +15,9 @@ public class InvoiceIssuanceDto {
     public string? Note { get; set; }
     public int? HdNo { get; set; }
     public DateTime CreatedDate { get; set; }
-    public string ClsfNo { get; set; }
-    public string SpcfNo { get; set; }
-    public string TemplateCode { get; set; }
+    public string ClsfNo { get; set; } = string.Empty;
+    public string SpcfNo { get; set; } = string.Empty;
+    public string TemplateCode { get; set; } = string.Empty;
     public string? ExchCd { get; set; }
     public decimal ExchRt { get; set; }
     public string? BankAccount { get; set; }

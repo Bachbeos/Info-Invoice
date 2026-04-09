@@ -11,12 +11,11 @@ public class InvoicePrintService : IInvoicePrintService
         _repository = repository;
     }
 
-    public async Task<byte[]> PrintInvoicePdfAsync(string transactionId, int sessionId)
+    public async Task<byte[]> PrintInvoicePdfAsync(string transactionId, int userId, int taxId)
     {
-        // 1. Lấy Session kèm theo ApiKey đã lưu
-        var session = await _repository.GetSessionByIdAsync(sessionId);
-        if (session == null)
-            throw new Exception("Không tìm thấy phiên làm việc này.");
+        // 1. Kiểm tra session/provider
+        if (taxId <= 0)
+            throw new Exception("Vui lòng đăng nhập lại để xác thực mã số thuế.");
 
         // DEMO: Bỏ qua nếu không có ApiKey (thực tế thì throw Exception)
         // if (string.IsNullOrEmpty(session.ApiKey))

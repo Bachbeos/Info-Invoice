@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./login.scss";
 import { useProviders } from "../../../hooks/useProviders";
 import { useLogin } from "../../../hooks/useLogin";
 import type { AuthRequest } from "../../../types/auth";
+import authService from "../../../services/auth";
 
 const initial_form: AuthRequest = {
   providerId: 0,
@@ -34,6 +35,34 @@ export default function Login() {
 
   const isSubmitDisabled = loginLoading || providersLoading;
   const selectedProviderId = form.providerId || providers[0]?.id || 0;
+
+  useEffect(() => {
+    const fetchProviderConfig = async () => {
+      try {
+        const res = await authService.getProviderConfigs(
+          form.username,
+          selectedProviderId,
+        );
+        if (Array.isArray(res) && res.length > 0) {
+          setForm((prev) => ({
+            ...prev,
+            url: res[0].url || prev.url,
+            maDvcs: res[0].maDvcs || prev.maDvcs,
+          }));
+        }
+      } catch (err) {
+        console.error("Lỗi khi tải URL:", err);
+      }
+    };
+
+    const timeoutId = setTimeout(() => {
+      if (form.username && selectedProviderId) {
+        fetchProviderConfig();
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [form.username, selectedProviderId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,

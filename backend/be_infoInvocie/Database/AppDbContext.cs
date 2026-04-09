@@ -8,7 +8,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     //DBset<T> - Mapping 
     public DbSet<Provider> Providers { get; set; } //Dbset: Providers, DB: providers, Entity: Provider
-    public DbSet<InvoiceSession> InvoiceSessions { get; set; }
+    public DbSet<User> Users { get; set; }
+    public DbSet<TaxIds> TaxIds { get; set; }
+    public DbSet<UserAccessConfig> UserAccessConfigs { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Invoice> Invoices { get; set; }
     public DbSet<InvoiceItem> InvoiceItems { get; set; }
@@ -23,7 +25,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     {
         //defaut get class name for table name but override
         modelBuilder.Entity<Provider>().ToTable("providers");
-        modelBuilder.Entity<InvoiceSession>().ToTable("invoice_sessions");
+        modelBuilder.Entity<User>().ToTable("users");
+        modelBuilder.Entity<TaxIds>().ToTable("tax_ids");
+        modelBuilder.Entity<UserAccessConfig>().ToTable("user_access_configs");
         modelBuilder.Entity<RefreshToken>().ToTable("refresh_tokens");
         modelBuilder.Entity<TctAccount>().ToTable("tct_accounts");
         modelBuilder.Entity<TctSession>().ToTable("tct_sessions");

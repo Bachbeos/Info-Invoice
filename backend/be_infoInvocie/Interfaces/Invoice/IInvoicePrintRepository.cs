@@ -4,5 +4,5 @@ namespace be_infoInvoice.Interfaces.Invoice;
 
 public interface IInvoicePrintRepository
 {
-    Task<InvoiceSession?> GetSessionByIdAsync(int sessionId);
+    Task<UserAccessConfig?> GetFirstAccessConfigAsync(int userId);
 }

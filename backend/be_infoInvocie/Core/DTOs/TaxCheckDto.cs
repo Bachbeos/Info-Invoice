@@ -1,12 +1,10 @@
 ﻿namespace be_infoInvoice.Core.DTOs;
 
-// 1. DTO nhận danh sách MST từ Frontend gửi lên
 public class TaxCheckRequest
 {
     public List<string> TaxCodes { get; set; } = new();
 }
 
-// 2. DTO đại diện cho kết quả của TỪNG mã số thuế (Khớp với tài liệu)
 public class TaxStatusResult
 {
     public string MaSoThue { get; set; } = null!;
@@ -19,7 +17,6 @@ public class TaxStatusResult
     public string NgayKiemTra { get; set; } = null!;
 }
 
-// 3. DTO tổng quát trả về cho Frontend (Có Status, Message và List kết quả)
 public class TaxCheckResponse
 {
     public bool Status { get; set; }

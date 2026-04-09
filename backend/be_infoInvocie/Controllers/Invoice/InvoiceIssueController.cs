@@ -16,7 +16,7 @@ public class InvoiceIssueController(IInvoiceIssueService service, IUserContext u
     [HttpPost("issue")]
     public async Task<IActionResult> IssueInvoice([FromBody] InvoiceIssuanceDto request)
     {
-        var result = await service.IssueInvoiceAsync(request, userContext.SessionId);
+        var result = await service.IssueInvoiceAsync(request, userContext.UserId, userContext.TaxId);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
@@ -24,7 +24,7 @@ public class InvoiceIssueController(IInvoiceIssueService service, IUserContext u
     [HttpPost("replace")]
     public async Task<IActionResult> ReplaceInvoice([FromBody] InvoiceReplaceDto dto)
     {
-        var success = await service.ReplaceInvoiceAsync(dto, userContext.SessionId);
+        var success = await service.ReplaceInvoiceAsync(dto, userContext.UserId, userContext.TaxId);
         return success 
             ? Ok(ApiResult<bool>.Success(true, "Lưu hóa đơn thành công")) 
             : BadRequest(ApiResult<bool>.Failure(400, "Lưu hóa đơn thay thế thất bại"));
@@ -34,7 +34,7 @@ public class InvoiceIssueController(IInvoiceIssueService service, IUserContext u
     [HttpPost("adjust")]
     public async Task<IActionResult> AdjustInvoice([FromBody] InvoiceAdjustDto dto)
     {
-        var success = await service.AdjustInvoiceAsync(dto, userContext.SessionId);
+        var success = await service.AdjustInvoiceAsync(dto, userContext.UserId, userContext.TaxId);
         return success
             ? Ok(ApiResult<bool>.Success(true, "Lưu hóa đơn điều chỉnh thành công!"))
             : BadRequest(ApiResult<bool>.Failure(400, "Lưu hóa đơn điều chỉnh thất bại!"));

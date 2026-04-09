@@ -19,25 +19,35 @@ public class AuthRepository : IAuthRepository
         return await _context.Providers.OrderBy(p => p.Name).ToListAsync();
     }
 
-
-
-    public async Task<InvoiceSession?> GetExistingSessionAsync(int providerId, string maDvcs)
+    public async Task<User?> GetUserByUsernameAsync(string username)
     {
-        return await _context.InvoiceSessions
-            .FirstOrDefaultAsync(s => s.ProviderId == providerId && s.MaDvcs == maDvcs);
+        return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
     }
 
-    public async Task<InvoiceSession> SaveSessionAsync(InvoiceSession session)
+    public async Task<UserAccessConfig?> GetAccessConfigDetailsAsync(int userId, string maDvcs, int providerId)
     {
-        _context.InvoiceSessions.Add(session);
-        await _context.SaveChangesAsync();
-        return session;
+        var tax = await _context.TaxIds.FirstOrDefaultAsync(t => t.MaDvcs == maDvcs);
+        if (tax == null) return null;
+
+        return await _context.UserAccessConfigs
+            .FirstOrDefaultAsync(c => c.UserId == userId && c.TaxId == tax.Id && c.ProviderId == providerId);
     }
 
-    public async Task UpdateSessionAsync(InvoiceSession session)
+    public async Task<IEnumerable<object>> GetUserSuggestionsAsync(string username, int providerId)
     {
-        _context.InvoiceSessions.Update(session);
-        await _context.SaveChangesAsync();
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+        if (user == null) return Enumerable.Empty<object>();
+
+        var configs = await _context.UserAccessConfigs
+            .Where(c => c.UserId == user.Id && c.ProviderId == providerId)
+            .Join(_context.TaxIds, c => c.TaxId, t => t.Id, (c, t) => new 
+            {
+                MaDvcs = t.MaDvcs,
+                Url = c.Url
+            })
+            .ToListAsync();
+
+        return configs;
     }
 
     public async Task SaveRefreshTokenAsync(RefreshToken token)

@@ -15,14 +15,16 @@ public class JwtService : IJwtService
         _configuration = configuration;
     }
 
-    public string GenerateToken(int sessionId)
+    public string GenerateToken(int userId, int taxId, int providerId)
     {
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
 
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, sessionId.ToString()),
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+            new Claim("taxId", taxId.ToString()),
+            new Claim("providerId", providerId.ToString()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 

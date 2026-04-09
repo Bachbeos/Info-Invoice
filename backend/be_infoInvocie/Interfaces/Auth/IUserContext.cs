@@ -1,7 +1,9 @@
-﻿namespace be_infoInvoice.Interfaces.Auth
+namespace be_infoInvoice.Interfaces.Auth
 {
     public interface IUserContext
     {
-        int SessionId { get; }
+        int UserId { get; }
+        int TaxId { get; }
+        int ProviderId { get; }
     }
 }

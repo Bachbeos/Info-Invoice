@@ -4,5 +4,5 @@ namespace be_infoInvoice.Interfaces.Invoice;
 
 public interface IInvoiceExportService
 {
-    Task<InvoiceExportResponse> ExportInvoiceXmlAsync(string transactionId, int sessionId);
+    Task<InvoiceExportResponse> ExportInvoiceXmlAsync(string transactionId, int userId, int taxId);
 }

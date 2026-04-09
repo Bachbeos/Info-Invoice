@@ -4,5 +4,5 @@ namespace be_infoInvoice.Interfaces.Invoice;
 
 public interface IInvoiceExportRepository
 {
-    Task<InvoiceSession?> GetSessionByIdAsync(int sessionId);
+    Task<UserAccessConfig?> GetFirstAccessConfigAsync(int userId);
 }

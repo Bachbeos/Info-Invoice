@@ -4,5 +4,5 @@ namespace be_infoInvoice.Interfaces.Invoice;
 
 public interface IInvoiceCheckService
 {
-    Task<TaxCheckResponse> CheckTaxStatusAsync(TaxCheckRequest request, int sessionId);
+    Task<TaxCheckResponse> CheckTaxStatusAsync(TaxCheckRequest request, int userId, int taxId);
 }

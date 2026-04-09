@@ -5,5 +5,5 @@ namespace be_infoInvoice.Interfaces.Invoice;
 public interface IInvoiceIssueRepository
 {
     Task<bool> CreateInvoiceAsync(Database.Entities.Invoice invoice);
-    Task<InvoiceSession?> GetSessionByIdAsync(int sessionId);
+    Task<UserAccessConfig?> GetFirstAccessConfigAsync(int userId);
 }

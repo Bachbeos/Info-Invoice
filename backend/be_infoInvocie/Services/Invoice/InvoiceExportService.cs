@@ -12,16 +12,15 @@ public class InvoiceExportService : IInvoiceExportService
         _repository = repository;
     }
 
-    public async Task<InvoiceExportResponse> ExportInvoiceXmlAsync(string transactionId, int sessionId)
+    public async Task<InvoiceExportResponse> ExportInvoiceXmlAsync(string transactionId, int userId, int taxId)
     {
-        // 1. Lấy thông tin session để có Account nhà cung cấp
-        var session = await _repository.GetSessionByIdAsync(sessionId);
-        if (session == null)
+        // 1. Kiểm tra session/provider
+        if (taxId <= 0)
         {
             return new InvoiceExportResponse
             {
                 Status  = false,
-                Message = "Phiên làm việc hết hạn hoặc không tồn tại."
+                Message = "Vui lòng đăng nhập lại để xác thực mã số thuế."
             };
         }
 

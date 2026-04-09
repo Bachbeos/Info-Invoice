@@ -1,6 +1,7 @@
 const endpoint = {
   auth: {
     login: "/auth/login",
+    providerConfigs: "/auth/provider-configs",
   },
   invoice: {
     providers: "/auth/providers",
