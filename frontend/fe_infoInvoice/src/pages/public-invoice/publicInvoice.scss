@@ -1,6 +1,7 @@
 .invoice-container {
   padding-bottom: 5rem;
   background-color: #f4f6f9;
+  overflow: hidden;
 
   // Header
   .inv-header {
@@ -9,19 +10,23 @@
       font-weight: 800;
       letter-spacing: 1px;
     }
+
     .separator {
       margin: 0 0.6rem;
       color: #adb5bd;
     }
+
     h3 {
       font-size: 1.35rem;
       font-weight: 600;
       color: #212529;
     }
+
     code {
       font-size: 0.72rem;
       color: #6c757d;
     }
+
     .status-badge {
       background: linear-gradient(135deg, #1565c0, #1976d2);
       color: #fff;
@@ -72,6 +77,16 @@
     margin-bottom: 0.3rem;
     color: #495057;
     font-weight: 500;
+
+    &:has(+ .form-control[required]),
+    &:has(+ .form-select[required]),
+    &:has(+ textarea[required]),
+    &:has(+ input[required]) {
+      &::after {
+        content: " *";
+        color: #dc3545;
+      }
+    }
   }
 
   .form-control,
@@ -191,9 +206,11 @@
     &::-webkit-scrollbar {
       width: 6px;
     }
+
     &::-webkit-scrollbar-track {
       background: #161b22;
     }
+
     &::-webkit-scrollbar-thumb {
       background: #30363d;
       border-radius: 3px;

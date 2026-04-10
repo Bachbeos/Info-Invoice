@@ -21,3 +21,8 @@ export interface AuthError {
   status: number;
   message: string;
 }
+
+export interface ProviderConfig {
+  url?: string;
+  maDvcs?: string;
+}

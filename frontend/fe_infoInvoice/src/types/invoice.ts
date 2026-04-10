@@ -134,3 +134,48 @@ export interface IExportXmlResponse {
     message: string;
     data: string;
 }
+
+export interface IReplaceAdjustInvoiceListRequest {
+    page?: number;
+    pageSize?: number;
+    fromDate?: string;
+    toDate?: string;
+}
+
+export interface IReplaceAdjustInvoiceListItem {
+    id: number;
+    transactionId?: string;
+    transactionID?: string;
+    invoiceNo?: string;
+    invRef?: string;
+    createdDate?: string;
+    createdAt?: string;
+}
+
+export type IReplaceAdjustInvoiceListData =
+    | IReplaceAdjustInvoiceListItem[]
+    | {
+        items?: IReplaceAdjustInvoiceListItem[];
+        records?: IReplaceAdjustInvoiceListItem[];
+        datas?: IReplaceAdjustInvoiceListItem[];
+    };
+
+export interface IReplaceAdjustInvoiceListResponse {
+    code: number;
+    message: string;
+    data: IReplaceAdjustInvoiceListData;
+}
+
+export interface IReplaceAdjustInvoiceDetail {
+    id: number;
+    transactionId?: string;
+    transactionID?: string;
+    invoiceNo?: string;
+    invRef?: string;
+}
+
+export interface IReplaceAdjustInvoiceDetailResponse {
+    code: number;
+    message: string;
+    data: IReplaceAdjustInvoiceDetail;
+}

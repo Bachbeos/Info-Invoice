@@ -1,12 +1,12 @@
 import { apiClient } from "../lib/apiClient";
 import endpoint from "../configs/urls";
-import type { AuthRequest, AuthResponse } from "../types/auth";
+import type { AuthRequest, AuthResponse, ProviderConfig } from "../types/auth";
 
 const authService = {
   login: (body: AuthRequest) =>
     apiClient.post<AuthResponse>(endpoint.auth.login, body),
-  getProviderConfigs: (username: string, providerId: number) =>
-    apiClient.get<any[]>(endpoint.auth.providerConfigs, { username, providerId }),
+  getProviderConfigs: (providerId: number) =>
+    apiClient.get<ProviderConfig[]>(endpoint.auth.providerConfigs, { providerId }),
 };
 
 export default authService;

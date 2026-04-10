@@ -1,6 +1,14 @@
 import { apiClient } from "../lib/apiClient";
 import endpoint from "../configs/urls";
-import type { IProvider, ITaxCheckRequest, ITaxCheckResponse, IExportXmlResponse } from "../types/invoice";
+import type {
+  IProvider,
+  ITaxCheckRequest,
+  ITaxCheckResponse,
+  IExportXmlResponse,
+  IReplaceAdjustInvoiceDetailResponse,
+  IReplaceAdjustInvoiceListRequest,
+  IReplaceAdjustInvoiceListResponse,
+} from "../types/invoice";
 import type { IActionInvoiceRequest, IActionInvoiceResponse, IIssueInvoiceRequest, IIssueInvoiceResponse } from "../types/invoice-action";
 
 
@@ -15,6 +23,12 @@ const invoiceService = {
 
   adjust: (payload: IActionInvoiceRequest) =>
     apiClient.post<IActionInvoiceResponse>(endpoint.invoice.adjust, payload),
+
+  getInvoicesList: (params: IReplaceAdjustInvoiceListRequest) =>
+    apiClient.get<IReplaceAdjustInvoiceListResponse>(endpoint.invoice.list, params),
+
+  getInvoiceDetail: (id: number) =>
+    apiClient.get<IReplaceAdjustInvoiceDetailResponse>(`${endpoint.invoice.detail}/${id}`),
 
   exportXml: (transactionId: string) =>
     apiClient.get<IExportXmlResponse>(`${endpoint.invoice.exportXml}/${transactionId}`),

@@ -12,15 +12,6 @@ public class InvoiceAdjustDto : InvoiceIssuanceDto
 
 public class InvoiceIssueResponse
 {
-    public int Code { get; set; }
-    public int Status { get; set; }
-    public string Message { get; set; } = null!;
-    public InvoiceIssueData? Data { get; set; }
-    public bool IsSuccess { get; set; }
-}
-
-public class InvoiceIssueData
-{
     public string InvoiceNo { get; set; } = string.Empty;
     public string InvDate { get; set; } = string.Empty;
     public string TransactionId { get; set; } = string.Empty;

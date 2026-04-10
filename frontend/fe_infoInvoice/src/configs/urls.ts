@@ -8,6 +8,8 @@ const endpoint = {
     issue: "/invoice/issue",
     replace: "/invoice/replace",
     adjust: "/invoice/adjust",
+    list: "/invoice/list",
+    detail: "/invoice",
     exportXml: "/invoice/export-xml",
     print: "/invoice/print",
     checkTaxStatus: "/invoice/check-tax-status",

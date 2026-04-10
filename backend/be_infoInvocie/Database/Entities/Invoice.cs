@@ -4,7 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace be_infoInvoice.Database.Entities;
 
 [Table("invoices")]
-public class Invoice {
+public class Invoice
+{
     public int Id { get; set; }
     [Column("user_id")] public int UserId { get; set; }
     [Column("tax_id")] public int TaxId { get; set; }
@@ -24,7 +25,7 @@ public class Invoice {
     [Column("paid_tp")] public string PaidTp { get; set; } = "CK";
     [MaxLength(255)]
     [Column("note")] public string? Note { get; set; }
-    [Column("hd_no")] public int HdNo { get; set; }
+    [Column("hd_no")] public string? HdNo { get; set; }
     [Column("created_date")] public DateTime CreatedDate { get; set; }
     [Column("clsf_no")] public string ClsfNo { get; set; } = string.Empty;
     [Column("spcf_no")] public string SpcfNo { get; set; } = string.Empty;
@@ -41,7 +42,7 @@ public class Invoice {
 
     public virtual ICollection<InvoiceItem> Items { get; set; } = new List<InvoiceItem>();
     public virtual InvoiceCustomer? Customer { get; set; }
-    
+
     [Column("invoice_type")]
     public int InvoiceType { get; set; } = 1; // 1: Gốc, 2: Thay thế, 3: Điều chỉnh
 

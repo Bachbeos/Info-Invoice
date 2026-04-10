@@ -35,11 +35,11 @@ export function useProviders(): UseProvidersResult {
 
     fetchProviders();
 
-    // Cleanup function: chạy khi component unmount hoặc dependency thay đổi
+    //Cleanup function
     return () => {
       cancelled = true;
     };
-  }, []); // [] = chỉ chạy 1 lần khi mount
+  }, []);
 
   return { providers, isLoading, error };
 }

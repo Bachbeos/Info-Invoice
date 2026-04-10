@@ -13,7 +13,7 @@ public class AuthRepository : IAuthRepository
     {
         _context = context;
     }
-    
+
     public async Task<IEnumerable<Provider>> GetProvidersAsync()
     {
         return await _context.Providers.OrderBy(p => p.Name).ToListAsync();
@@ -33,18 +33,15 @@ public class AuthRepository : IAuthRepository
             .FirstOrDefaultAsync(c => c.UserId == userId && c.TaxId == tax.Id && c.ProviderId == providerId);
     }
 
-    public async Task<IEnumerable<object>> GetUserSuggestionsAsync(string username, int providerId)
+    public async Task<IEnumerable<object>> GetProviderConfigsAsync(int providerId)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-        if (user == null) return Enumerable.Empty<object>();
-
         var configs = await _context.UserAccessConfigs
-            .Where(c => c.UserId == user.Id && c.ProviderId == providerId)
-            .Join(_context.TaxIds, c => c.TaxId, t => t.Id, (c, t) => new 
+            .Where(c => c.ProviderId == providerId)
+            .Select(c => new
             {
-                MaDvcs = t.MaDvcs,
                 Url = c.Url
             })
+            .Distinct()
             .ToListAsync();
 
         return configs;

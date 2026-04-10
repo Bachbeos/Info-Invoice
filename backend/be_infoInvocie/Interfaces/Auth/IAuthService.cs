@@ -7,5 +7,5 @@ public interface IAuthService
 {
     Task<IEnumerable<Provider>> GetAvailableProvidersAsync();
     Task<ApiResult<object>> AuthenticateAndSaveSessionAsync(LoginRequest request);
-    Task<IEnumerable<object>> GetUserSuggestionsAsync(string username, int providerId);
+    Task<IEnumerable<object>> GetProviderConfigsAsync(int providerId);
 }

@@ -7,6 +7,21 @@ public class InvoiceValidator : IInvoiceValidator
 {
     public (bool IsValid, string Message) ValidateInvoice(InvoiceIssuanceDto dto)
     {
+        if (dto.InvSubTotal <= 0)
+            return (false, "Tổng tiền hàng là bắt buộc và phải lớn hơn 0.");
+
+        if (dto.InvVatAmount < 0)
+            return (false, "Tiền thuế không được âm.");
+
+        if (dto.InvTotalAmount <= 0)
+            return (false, "Tổng tiền thanh toán là bắt buộc và phải lớn hơn 0.");
+
+        if (string.IsNullOrWhiteSpace(dto.ClsfNo))
+            return (false, "Phân loại hóa đơn là bắt buộc.");
+
+        if (string.IsNullOrWhiteSpace(dto.SpcfNo))
+            return (false, "Mẫu số hóa đơn là bắt buộc.");
+
         if (dto.Customer == null)
             return (false, "Thông tin khách hàng không được để trống.");
 

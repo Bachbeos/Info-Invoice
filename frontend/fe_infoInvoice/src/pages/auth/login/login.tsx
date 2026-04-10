@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import "./login.scss";
 import { useProviders } from "../../../hooks/useProviders";
 import { useLogin } from "../../../hooks/useLogin";
@@ -37,32 +37,34 @@ export default function Login() {
   const selectedProviderId = form.providerId || providers[0]?.id || 0;
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchProviderConfig = async () => {
+      if (!selectedProviderId) {
+        setForm((prev) => ({ ...prev, url: "" }));
+        return;
+      }
+
       try {
-        const res = await authService.getProviderConfigs(
-          form.username,
-          selectedProviderId,
-        );
-        if (Array.isArray(res) && res.length > 0) {
-          setForm((prev) => ({
-            ...prev,
-            url: res[0].url || prev.url,
-            maDvcs: res[0].maDvcs || prev.maDvcs,
-          }));
+        const res = await authService.getProviderConfigs(selectedProviderId);
+
+        if (cancelled) return;
+
+        const providerUrl = Array.isArray(res) && res.length > 0 ? (res[0].url ?? "") : "";
+        setForm((prev) => ({ ...prev, url: providerUrl }));
+      } catch {
+        if (!cancelled) {
+          setForm((prev) => ({ ...prev, url: "" }));
         }
-      } catch (err) {
-        console.error("Lỗi khi tải URL:", err);
       }
     };
 
-    const timeoutId = setTimeout(() => {
-      if (form.username && selectedProviderId) {
-        fetchProviderConfig();
-      }
-    }, 500);
+    fetchProviderConfig();
 
-    return () => clearTimeout(timeoutId);
-  }, [form.username, selectedProviderId]);
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedProviderId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -114,6 +116,79 @@ export default function Login() {
               <form onSubmit={handleSubmit}>
                 <div className="row">
                   <div className="col-md-6 mb-3">
+                    <label className="form-label" htmlFor="username">
+                      Tài khoản
+                    </label>
+                    <input
+                      id="username"
+                      className="form-control"
+                      placeholder="Nhập tài khoản"
+                      value={form.username}
+                      onChange={handleChange}
+                      disabled={isSubmitDisabled}
+                      required
+                    />
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label" htmlFor="password">
+                      Mật khẩu
+                    </label>
+                    <div className="position-relative">
+                      <input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Nhập mật khẩu"
+                        className="form-control pe-5"
+                        value={form.password}
+                        onChange={handleChange}
+                        required
+                        disabled={isSubmitDisabled}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        className="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted"
+                        aria-label={
+                          showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"
+                        }
+                      >
+                        <i
+                          className={
+                            showPassword ? "ri-eye-off-line" : "ri-eye-line"
+                          }
+                        ></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label" htmlFor="maDvcs">
+                      Mã số thuế
+                    </label>
+                    <input
+                      id="maDvcs"
+                      className="form-control"
+                      placeholder="Nhập mã số thuế của bạn"
+                      value={form.maDvcs}
+                      onChange={handleChange}
+                      disabled={isSubmitDisabled}
+                    />
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label" htmlFor="tenantId">
+                      EHoaDon
+                    </label>
+                    <input
+                      id="tenantId"
+                      className="form-control"
+                      placeholder="Nếu có"
+                      value={form.tenantId}
+                      onChange={handleChange}
+                      disabled={isSubmitDisabled}
+                    />
+                  </div>
+                  <div className="col-md-6 mb-3">
                     <label className="form-label" htmlFor="providerId">
                       Nhà cung cấp
                     </label>
@@ -150,79 +225,6 @@ export default function Login() {
                       onChange={handleChange}
                       disabled={isSubmitDisabled}
                     />
-                  </div>
-
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label" htmlFor="maDvcs">
-                      MST / Mã DVCS
-                    </label>
-                    <input
-                      id="maDvcs"
-                      className="form-control"
-                      placeholder="Nhập MST / Mã DVCS"
-                      value={form.maDvcs}
-                      onChange={handleChange}
-                      disabled={isSubmitDisabled}
-                    />
-                  </div>
-
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label" htmlFor="tenantId">
-                      EHoaDon
-                    </label>
-                    <input
-                      id="tenantId"
-                      className="form-control"
-                      placeholder="Nếu có"
-                      value={form.tenantId}
-                      onChange={handleChange}
-                      disabled={isSubmitDisabled}
-                    />
-                  </div>
-
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label" htmlFor="username">
-                      Tài khoản
-                    </label>
-                    <input
-                      id="username"
-                      className="form-control"
-                      value={form.username}
-                      onChange={handleChange}
-                      disabled={isSubmitDisabled}
-                      required
-                    />
-                  </div>
-
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label" htmlFor="password">
-                      Mật khẩu
-                    </label>
-                    <div className="position-relative">
-                      <input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        className="form-control pe-5"
-                        value={form.password}
-                        onChange={handleChange}
-                        required
-                        disabled={isSubmitDisabled}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((prev) => !prev)}
-                        className="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted"
-                        aria-label={
-                          showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"
-                        }
-                      >
-                        <i
-                          className={
-                            showPassword ? "ri-eye-off-line" : "ri-eye-line"
-                          }
-                        ></i>
-                      </button>
-                    </div>
                   </div>
                 </div>
 

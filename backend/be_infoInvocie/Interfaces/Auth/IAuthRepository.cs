@@ -7,6 +7,6 @@ public interface IAuthRepository
     Task<IEnumerable<Provider>> GetProvidersAsync();
     Task<User?> GetUserByUsernameAsync(string username);
     Task<UserAccessConfig?> GetAccessConfigDetailsAsync(int userId, string maDvcs, int providerId);
-    Task<IEnumerable<object>> GetUserSuggestionsAsync(string username, int providerId);
+    Task<IEnumerable<object>> GetProviderConfigsAsync(int providerId);
     Task SaveRefreshTokenAsync(RefreshToken token);
 }

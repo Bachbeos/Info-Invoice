@@ -20,14 +20,16 @@ public class AuthService : IAuthService
     {
         return await _repository.GetProvidersAsync();
     }
-    public async Task<IEnumerable<object>> GetUserSuggestionsAsync(string username, int providerId)
+
+    public async Task<IEnumerable<object>> GetProviderConfigsAsync(int providerId)
     {
-        return await _repository.GetUserSuggestionsAsync(username, providerId);
+        return await _repository.GetProviderConfigsAsync(providerId);
     }
-    
+
     public async Task<ApiResult<object>> AuthenticateAndSaveSessionAsync(LoginRequest request)
     {
-        if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password) || request.Password.Length < 6) {
+        if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password) || request.Password.Length < 6)
+        {
             return ApiResult<object>.Failure(401, "Thông tin đăng nhập không chính xác");
         }
 
@@ -37,7 +39,7 @@ public class AuthService : IAuthService
             return ApiResult<object>.Failure(401, "Thông tin đăng nhập không chính xác");
         }
 
-        if (user.Status != 1) 
+        if (user.Status != 1)
         {
             return ApiResult<object>.Failure(403, "Tài khoản đã bị khóa");
         }
@@ -50,14 +52,14 @@ public class AuthService : IAuthService
         var config = await _repository.GetAccessConfigDetailsAsync(user.Id, request.MaDvcs, request.ProviderId);
         if (config == null)
         {
-            return ApiResult<object>.Failure(403, "Tài khoản không được cấu hình cho mã số thuế hoặc nhà cung cấp này");
+            return ApiResult<object>.Failure(403, "Tài khoản không được cấu hình cho mã số thuế ho ặc nhà cung cấp này");
         }
 
         await CreateAndSaveRefreshToken(user.Id);
 
         var token = _jwtService.GenerateToken(user.Id, config.TaxId, config.ProviderId);
 
-        return ApiResult<object>.Success(new {AccessToken  = token}, "Đăng nhập thành công!");
+        return ApiResult<object>.Success(new { AccessToken = token }, "Đăng nhập thành công!");
     }
 
     private async Task CreateAndSaveRefreshToken(int userId)

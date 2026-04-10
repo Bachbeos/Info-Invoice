@@ -1,11 +1,47 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import invoiceService from "../../services/InvoiceService";
 import { ApiError } from "../../lib/apiClient";
 import { useNavigate } from "react-router-dom";
 import { clearToken } from "../../utils/token";
 import "./publicInvoice.scss";
-import type { ITaxStatusResult } from "../../types/invoice";
+import type {
+  IReplaceAdjustInvoiceListData,
+  IReplaceAdjustInvoiceListItem,
+  ITaxStatusResult,
+} from "../../types/invoice";
+
+interface InvoiceOption {
+  id: number;
+  transactionId: string;
+  label: string;
+}
+
+const getTransactionId = (invoice: IReplaceAdjustInvoiceListItem): string =>
+  invoice.transactionId ?? invoice.transactionID ?? "";
+
+const getInvoiceListItems = (
+  data: IReplaceAdjustInvoiceListData | null | undefined,
+): IReplaceAdjustInvoiceListItem[] => {
+  if (!data) return [];
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data.items)) return data.items;
+  if (Array.isArray(data.records)) return data.records;
+  if (Array.isArray(data.datas)) return data.datas;
+  return [];
+};
+
+const toInvoiceOption = (invoice: IReplaceAdjustInvoiceListItem): InvoiceOption => {
+  const transactionId = getTransactionId(invoice);
+  const invoiceNo = invoice.invoiceNo ? `HĐ ${invoice.invoiceNo}` : `ID ${invoice.id}`;
+  const createdAt = invoice.createdDate ?? invoice.createdAt;
+  const dateText = createdAt ? ` - ${new Date(createdAt).toLocaleDateString("vi-VN")}` : "";
+  return {
+    id: invoice.id,
+    transactionId,
+    label: `${invoiceNo} - ${transactionId || "(Không có Transaction ID)"}${dateText}`,
+  };
+};
 
 interface ProductItem {
   id: string;
@@ -27,6 +63,10 @@ export default function PublicInvoice() {
     "issue",
   );
   const [transactionIdOld, setTransactionIdOld] = useState("");
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState("");
+  const [invoiceOptions, setInvoiceOptions] = useState<InvoiceOption[]>([]);
+  const [isInvoiceListLoading, setIsInvoiceListLoading] = useState(false);
+  const [isInvoiceDetailLoading, setIsInvoiceDetailLoading] = useState(false);
 
   const [invoiceInfo, setInvoiceInfo] = useState({
     invRef: "",
@@ -67,7 +107,7 @@ export default function PublicInvoice() {
       itmCd: "",
       itmName: "",
       itmKnd: 1,
-      unitNm: "Cái",
+      unitNm: "",
       qty: 1,
       unprc: 0,
       discRate: 0,
@@ -76,7 +116,6 @@ export default function PublicInvoice() {
     },
   ]);
 
-  const [payloadResult, setPayloadResult] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
 
   const [utilTransactionId, setUtilTransactionId] = useState("");
@@ -87,6 +126,82 @@ export default function PublicInvoice() {
   const handleLogout = () => {
     clearToken();
     navigate("/login", { replace: true });
+  };
+
+  useEffect(() => {
+    if (actionMode === "issue") {
+      setSelectedInvoiceId("");
+      setInvoiceOptions([]);
+      setTransactionIdOld("");
+      return;
+    }
+
+    const fetchInvoiceOptions = async () => {
+      setIsInvoiceListLoading(true);
+      setSelectedInvoiceId("");
+      setTransactionIdOld("");
+      try {
+        const res = await invoiceService.getInvoicesList({ page: 1, pageSize: 100 });
+        if (res.code !== 200) {
+          toast.error(res.message || "Không tải được danh sách hóa đơn");
+          setInvoiceOptions([]);
+          return;
+        }
+
+        const options = getInvoiceListItems(res.data).map(toInvoiceOption);
+        setInvoiceOptions(options);
+      } catch (err) {
+        if (err instanceof ApiError) {
+          toast.error(`Không tải được danh sách hóa đơn (${err.status})`);
+        } else {
+          toast.error("Không tải được danh sách hóa đơn");
+        }
+        setInvoiceOptions([]);
+      } finally {
+        setIsInvoiceListLoading(false);
+      }
+    };
+
+    void fetchInvoiceOptions();
+  }, [actionMode]);
+
+  const handleSelectOldInvoice = async (invoiceIdValue: string) => {
+    setSelectedInvoiceId(invoiceIdValue);
+    setTransactionIdOld("");
+
+    if (!invoiceIdValue) return;
+
+    const invoiceId = Number(invoiceIdValue);
+    setIsInvoiceDetailLoading(true);
+    try {
+      const res = await invoiceService.getInvoiceDetail(invoiceId);
+      if (res.code !== 200) {
+        toast.error(res.message || "Không lấy được chi tiết hóa đơn");
+        return;
+      }
+
+      const transactionId = res.data?.transactionId ?? res.data?.transactionID;
+      if (transactionId) {
+        setTransactionIdOld(transactionId);
+        return;
+      }
+
+      const fallbackTransactionId =
+        invoiceOptions.find((option) => option.id === invoiceId)?.transactionId ?? "";
+      if (fallbackTransactionId) {
+        setTransactionIdOld(fallbackTransactionId);
+      } else {
+        toast.error("Không tìm thấy Transaction ID của hóa đơn đã chọn");
+      }
+    } catch (err) {
+      if (err instanceof ApiError) {
+        toast.error(`Không lấy được chi tiết hóa đơn (${err.status})`);
+      } else {
+        toast.error("Không lấy được chi tiết hóa đơn");
+      }
+    } finally {
+      setIsInvoiceDetailLoading(false);
+    }
   };
 
   const handleExportXml = async () => {
@@ -261,11 +376,10 @@ export default function PublicInvoice() {
     try {
       if (actionMode === "issue") {
         const payload = { ...basePayload, transactionId: transactionID, hdNo: invoiceInfo.hdNo ? Number(invoiceInfo.hdNo) : null };
-        setPayloadResult(JSON.stringify(payload, null, 2));
 
         const res = await invoiceService.issue(payload);
 
-        if (res.isSuccess) {
+        if (res.code === 200) {
           toast.success(
             `Phát hành thành công! Số HĐ: ${res.data?.invoiceNo || "(chờ cấp)"} — Ngày: ${res.data?.invDate || ""}`
           );
@@ -275,7 +389,7 @@ export default function PublicInvoice() {
 
       } else if (actionMode === "replace" || actionMode === "adjust") {
         if (!transactionIdOld) {
-          toast.error("Vui lòng nhập Mã giao dịch gốc!");
+          toast.error("Vui lòng chọn hóa đơn gốc!");
           setIsLoading(false);
           return;
         }
@@ -286,13 +400,12 @@ export default function PublicInvoice() {
           hdNo: invoiceInfo.hdNo ? Number(invoiceInfo.hdNo) : null,
           transactionIdOld
         };
-        setPayloadResult(JSON.stringify(payload, null, 2));
 
         const res = actionMode === "replace"
           ? await invoiceService.replace(payload)
           : await invoiceService.adjust(payload);
 
-        if (res.isSuccess) {
+        if (res.code === 200) {
           toast.success(res.message || `${actionMode === "replace" ? "Thay thế" : "Điều chỉnh"} hóa đơn thành công!`);
         } else {
           toast.error(`Lỗi ${res.code}: ${res.message}`);
@@ -315,7 +428,7 @@ export default function PublicInvoice() {
   return (
     <div className="invoice-container container my-4">
       {/* Header */}
-      <div className="inv-header d-flex justify-content-between align-items-center mb-4">
+      <div className="inv-header d-flex justify-content-between align-items-center mb-4 mt-4">
         <div>
           <h3 className="mb-0">
             <span className="brand-text">DAEWOO</span>
@@ -324,9 +437,6 @@ export default function PublicInvoice() {
             {actionMode === "replace" && "Thay thế Hóa đơn"}
             {actionMode === "adjust" && "Điều chỉnh Hóa đơn"}
           </h3>
-          <small className="text-muted">
-            Transaction ID: <code>{transactionID}</code>
-          </small>
         </div>
         <div className="d-flex align-items-center gap-3">
           <div className="btn-group shadow-sm" role="group">
@@ -385,332 +495,372 @@ export default function PublicInvoice() {
           <i className="ri-error-warning-line fs-4"></i>
           <div className="flex-grow-1">
             <label className="form-label fw-bold mb-1">
-              Mã giao dịch Gốc (Transaction ID cũ){" "}
-              <span className="text-danger">*</span>
+              Chọn hóa đơn gốc cần thay thế/điều chỉnh
             </label>
-            <input
-              className="form-control"
-              placeholder="Nhập mã giao dịch của hóa đơn cần thay thế/điều chỉnh..."
-              value={transactionIdOld}
-              onChange={(e) => setTransactionIdOld(e.target.value)}
-            />
+            <select
+              className="form-select"
+              value={selectedInvoiceId}
+              onChange={(e) => void handleSelectOldInvoice(e.target.value)}
+              disabled={isInvoiceListLoading || isInvoiceDetailLoading}
+            >
+              <option value="">
+                {isInvoiceListLoading
+                  ? "Đang tải danh sách hóa đơn..."
+                  : "-- Chọn hóa đơn --"}
+              </option>
+              {invoiceOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <small className="text-muted d-block mt-2">
+              {isInvoiceDetailLoading
+                ? "Đang tải Transaction ID từ hóa đơn đã chọn..."
+                : transactionIdOld
+                  ? `Transaction ID gốc: ${transactionIdOld}`
+                  : "Transaction ID gốc sẽ tự động lấy sau khi chọn hóa đơn."}
+            </small>
           </div>
         </div>
       )}
 
-      {/* I. Thông tin Hóa đơn */}
+      {/*Thông tin Hóa đơn */}
       <div className="card inv-card mb-4">
         <div className="card-header inv-card-header">
-          <i className="ri-file-text-line me-2" />
-          I. Thông tin Hóa đơn
+          <span>
+            <i className="ri-file-text-line me-2" />
+            Thông tin Hóa đơn
+          </span>
         </div>
-        <div className="card-body row g-3">
-          <div className="col-md-3">
-            <label className="form-label small">
-              Số chứng từ <span className="text-danger">*</span>
-            </label>
-            <input
-              className="form-control"
-              placeholder="VD: K24TGT804"
-              value={invoiceInfo.invRef}
-              onChange={(e) =>
-                setInvoiceInfo({ ...invoiceInfo, invRef: e.target.value })
-              }
-            />
-          </div>
-          <div className="col-md-3">
-            <label className="form-label small">Số đơn hàng (poNo)</label>
-            <input
-              className="form-control"
-              placeholder="Có thể trùng"
-              value={invoiceInfo.poNo}
-              onChange={(e) =>
-                setInvoiceInfo({ ...invoiceInfo, poNo: e.target.value })
-              }
-            />
-          </div>
-          <div className="col-md-2">
-            <label className="form-label small">Ngày phát hành</label>
-            <input
-              type="date"
-              className="form-control"
-              value={invoiceInfo.createdDate}
-              onChange={(e) =>
-                setInvoiceInfo({ ...invoiceInfo, createdDate: e.target.value })
-              }
-            />
-          </div>
-          <div className="col-md-2">
-            <label className="form-label small">
-              Phương thức TT <span className="text-danger">*</span>
-            </label>
-            <select
-              className="form-select"
-              value={invoiceInfo.paidTp}
-              onChange={(e) =>
-                setInvoiceInfo({ ...invoiceInfo, paidTp: e.target.value })
-              }
-            >
-              <option value="TM">TM - Tiền mặt</option>
-              <option value="CK">CK - Chuyển khoản</option>
-              <option value="TM/CK">TM/CK</option>
-            </select>
-          </div>
-          <div className="col-md-2">
-            <label className="form-label small">Số hóa đơn (hdNo)</label>
-            <input
-              className="form-control"
-              placeholder="Để trống nếu auto"
-              value={invoiceInfo.hdNo}
-              onChange={(e) =>
-                setInvoiceInfo({ ...invoiceInfo, hdNo: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="col-md-2">
-            <label className="form-label small">
-              Mẫu số (clsfNo) <span className="text-danger">*</span>
-            </label>
-            <input
-              className="form-control"
-              placeholder="VD: 1 hoặc 01GTKT0/001"
-              value={invoiceInfo.clsfNo}
-              onChange={(e) =>
-                setInvoiceInfo({ ...invoiceInfo, clsfNo: e.target.value })
-              }
-            />
-          </div>
-          <div className="col-md-2">
-            <label className="form-label small">
-              Ký hiệu HĐ (spcfNo) <span className="text-danger">*</span>
-            </label>
-            <input
-              className="form-control"
-              placeholder="VD: C24TGT"
-              value={invoiceInfo.spcfNo}
-              onChange={(e) =>
-                setInvoiceInfo({ ...invoiceInfo, spcfNo: e.target.value })
-              }
-            />
-          </div>
-          <div className="col-md-2">
-            <label className="form-label small">Template Code (SInvoice)</label>
-            <input
-              className="form-control"
-              placeholder="Chỉ dùng SInvoice"
-              value={invoiceInfo.templateCode}
-              onChange={(e) =>
-                setInvoiceInfo({ ...invoiceInfo, templateCode: e.target.value })
-              }
-            />
-          </div>
-          <div className="col-md-2">
-            <label className="form-label small">
-              Thuế suất HĐ (invVatRate)
-            </label>
-            <select
-              className="form-select"
-              value={invoiceInfo.invVatRate}
-              onChange={(e) =>
-                setInvoiceInfo({ ...invoiceInfo, invVatRate: e.target.value })
-              }
-            >
-              <option value="">Nhiều thuế suất</option>
-              <option value="0">0%</option>
-              <option value="8">8%</option>
-              <option value="10">10%</option>
-              <option value="-1">Không chịu thuế</option>
-            </select>
-          </div>
-          <div className="col-md-2">
-            <label className="form-label small">Loại tiền</label>
-            <input
-              className="form-control"
-              value={invoiceInfo.exchCd}
-              readOnly
-            />
-          </div>
-          <div className="col-md-2">
-            <label className="form-label small">Tỷ giá</label>
-            <input
-              type="number"
-              className="form-control"
-              value={invoiceInfo.exchRt}
-              onChange={(e) =>
-                setInvoiceInfo({ ...invoiceInfo, exchRt: +e.target.value })
-              }
-            />
-          </div>
-
-          <div className="col-md-3">
-            <label className="form-label small">Tài khoản NH bên bán</label>
-            <input
-              className="form-control"
-              placeholder="Số tài khoản"
-              value={invoiceInfo.bankAccount}
-              onChange={(e) =>
-                setInvoiceInfo({ ...invoiceInfo, bankAccount: e.target.value })
-              }
-            />
-          </div>
-          <div className="col-md-3">
-            <label className="form-label small">Ngân hàng bên bán</label>
-            <input
-              className="form-control"
-              placeholder="Tên ngân hàng"
-              value={invoiceInfo.bankName}
-              onChange={(e) =>
-                setInvoiceInfo({ ...invoiceInfo, bankName: e.target.value })
-              }
-            />
-          </div>
-          <div className="col-md-6">
-            <label className="form-label small">Ghi chú</label>
-            <input
-              className="form-control"
-              value={invoiceInfo.note}
-              onChange={(e) =>
-                setInvoiceInfo({ ...invoiceInfo, note: e.target.value })
-              }
-            />
+        <div className="card-body">
+          <div className="row g-3">
+            <div className="col-md-3">
+              <label className="form-label small">
+                Mã đơn hàng / Số chứng từ
+              </label>
+              <input
+                className="form-control"
+                placeholder="Nhập mã đơn hàng/số chứng từ"
+                value={invoiceInfo.invRef}
+                onChange={(e) =>
+                  setInvoiceInfo({ ...invoiceInfo, invRef: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-3">
+              <label className="form-label small">Số đơn hàng</label>
+              <input
+                className="form-control"
+                placeholder="Nhập số đơn hàng"
+                value={invoiceInfo.poNo}
+                onChange={(e) =>
+                  setInvoiceInfo({ ...invoiceInfo, poNo: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-2">
+              <label className="form-label small">Ngày phát hành</label>
+              <input
+                type="date"
+                className="form-control"
+                value={invoiceInfo.createdDate}
+                onChange={(e) =>
+                  setInvoiceInfo({ ...invoiceInfo, createdDate: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-2">
+              <label className="form-label small">
+                Phương thức thanh toán
+              </label>
+              <select
+                className="form-select"
+                required
+                value={invoiceInfo.paidTp}
+                onChange={(e) =>
+                  setInvoiceInfo({ ...invoiceInfo, paidTp: e.target.value })
+                }
+              >
+                <option value="TM">Tiền mặt</option>
+                <option value="CK">Chuyển khoản</option>
+                <option value="TM/CK">Tiền mặt/Chuyển khoản</option>
+              </select>
+            </div>
+            <div className="col-md-2">
+              <label className="form-label small">Số hóa đơn</label>
+              <input
+                className="form-control"
+                placeholder="Nhập số hóa đơn"
+                value={invoiceInfo.hdNo}
+                onChange={(e) =>
+                  setInvoiceInfo({ ...invoiceInfo, hdNo: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-2">
+              <label className="form-label small">
+                Mẫu số hóa đơn
+              </label>
+              <input
+                className="form-control"
+                required
+                placeholder="Nhập mẫu số hóa đơn"
+                value={invoiceInfo.clsfNo}
+                onChange={(e) =>
+                  setInvoiceInfo({ ...invoiceInfo, clsfNo: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-2">
+              <label className="form-label small">
+                Ký hiệu hóa đơn
+              </label>
+              <input
+                className="form-control"
+                required
+                placeholder="Nhập ký hiệu hóa đơn"
+                value={invoiceInfo.spcfNo}
+                onChange={(e) =>
+                  setInvoiceInfo({ ...invoiceInfo, spcfNo: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-2">
+              <label className="form-label small">Ký hiệu mẫu hóa đơn</label>
+              <input
+                className="form-control"
+                placeholder="Chỉ dùng SInvoice"
+                value={invoiceInfo.templateCode}
+                onChange={(e) =>
+                  setInvoiceInfo({ ...invoiceInfo, templateCode: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-2">
+              <label className="form-label small">
+                Thuế suất trên hóa đơn
+              </label>
+              <select
+                className="form-select"
+                value={invoiceInfo.invVatRate}
+                onChange={(e) =>
+                  setInvoiceInfo({ ...invoiceInfo, invVatRate: e.target.value })
+                }
+              >
+                <option value="">Nhiều thuế suất</option>
+                <option value="0">0%</option>
+                <option value="8">8%</option>
+                <option value="10">10%</option>
+                <option value="-1">Không chịu thuế</option>
+              </select>
+            </div>
+            <div className="col-md-2">
+              <label className="form-label small">Loại tiền</label>
+              <input
+                className="form-control"
+                value={invoiceInfo.exchCd}
+                readOnly
+              />
+            </div>
+            <div className="col-md-2">
+              <label className="form-label small">Tỷ giá</label>
+              <input
+                type="number"
+                className="form-control"
+                value={invoiceInfo.exchRt}
+                onChange={(e) =>
+                  setInvoiceInfo({ ...invoiceInfo, exchRt: +e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-3">
+              <label className="form-label small">Tài khoản ngân hàng bên bán</label>
+              <input
+                className="form-control"
+                placeholder="Nhập số tài khoản"
+                value={invoiceInfo.bankAccount}
+                onChange={(e) =>
+                  setInvoiceInfo({ ...invoiceInfo, bankAccount: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-3">
+              <label className="form-label small">Ngân hàng bên bán</label>
+              <input
+                className="form-control"
+                placeholder="Nhập tên ngân hàng"
+                value={invoiceInfo.bankName}
+                onChange={(e) =>
+                  setInvoiceInfo({ ...invoiceInfo, bankName: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-6">
+              <label className="form-label small">Ghi chú</label>
+              <input
+                className="form-control"
+                placeholder="Nhập ghi chú"
+                value={invoiceInfo.note}
+                onChange={(e) =>
+                  setInvoiceInfo({ ...invoiceInfo, note: e.target.value })
+                }
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* II. Thông tin Khách hàng */}
+      {/* Thông tin Khách hàng */}
       <div className="card inv-card mb-4">
         <div className="card-header inv-card-header">
-          <i className="ri-user-3-line me-2" />
-          II. Thông tin Người mua
+          <span>
+            <i className="ri-user-3-line me-2" />
+            Thông tin Người mua
+          </span>
         </div>
-        <div className="card-body row g-3">
-          <div className="col-md-2">
-            <label className="form-label small">Mã KH</label>
-            <input
-              className="form-control"
-              placeholder="custCd"
-              value={customer.custCd}
-              onChange={(e) =>
-                setCustomer({ ...customer, custCd: e.target.value })
-              }
-            />
-          </div>
-          <div className="col-md-4">
-            <label className="form-label small">Tên khách hàng</label>
-            <input
-              className="form-control"
-              value={customer.custNm}
-              onChange={(e) =>
-                setCustomer({ ...customer, custNm: e.target.value })
-              }
-            />
-          </div>
-          <div className="col-md-6">
-            <label className="form-label small">Tên công ty</label>
-            <input
-              className="form-control"
-              value={customer.custCompany}
-              onChange={(e) =>
-                setCustomer({ ...customer, custCompany: e.target.value })
-              }
-            />
+        <div className="card-body">
+          <div className="row g-3">
+            <div className="col-md-3">
+              <label className="form-label small">Mã khách hàng</label>
+              <input
+                className="form-control"
+                placeholder="Nhập mã khách hàng"
+                required
+                value={customer.custCd}
+                onChange={(e) =>
+                  setCustomer({ ...customer, custCd: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-3">
+              <label className="form-label small">Tên khách hàng</label>
+              <input
+                className="form-control"
+                placeholder="Nhập tên khách hàng"
+                required
+                value={customer.custNm}
+                onChange={(e) =>
+                  setCustomer({ ...customer, custNm: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-3">
+              <label className="form-label small">Tên công ty</label>
+              <input
+                className="form-control"
+                placeholder="Nhập tên công ty"
+                value={customer.custCompany}
+                onChange={(e) =>
+                  setCustomer({ ...customer, custCompany: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-3">
+              <label className="form-label small">Mã số thuế</label>
+              <input
+                className="form-control"
+                placeholder="Nhập mã số thuế"
+                required
+                value={customer.taxCode}
+                onChange={(e) =>
+                  setCustomer({ ...customer, taxCode: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-4">
+              <label className="form-label small">Số điện thoại</label>
+              <input
+                className="form-control"
+                placeholder="Nhập số điện thoại"
+                required
+                value={customer.custPhone}
+                onChange={(e) =>
+                  setCustomer({ ...customer, custPhone: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-4">
+              <label className="form-label small">Email nhận hóa đơn</label>
+              <input
+                type="email"
+                className="form-control"
+                placeholder="Nhập địa chỉ email"
+                value={customer.email}
+                onChange={(e) =>
+                  setCustomer({ ...customer, email: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-4">
+              <label className="form-label small">Email nhận bản sao</label>
+              <input
+                type="email"
+                className="form-control"
+                placeholder="Nhập địa chỉ email"
+                value={customer.emailCC}
+                onChange={(e) =>
+                  setCustomer({ ...customer, emailCC: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-4">
+              <label className="form-label small">Thành phố / Tỉnh</label>
+              <input
+                className="form-control"
+                placeholder="Nhập thành phố / tỉnh"
+                value={customer.custCity}
+                onChange={(e) =>
+                  setCustomer({ ...customer, custCity: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-4">
+              <label className="form-label small">Quận / Huyện</label>
+              <input
+                className="form-control"
+                placeholder="Nhập quận / huyện"
+                value={customer.custDistrictName}
+                onChange={(e) =>
+                  setCustomer({ ...customer, custDistrictName: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-4">
+              <label className="form-label small">Địa chỉ</label>
+              <input
+                className="form-control"
+                placeholder="Nhập địa chỉ"
+                value={customer.custAddrs}
+                onChange={(e) =>
+                  setCustomer({ ...customer, custAddrs: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-6">
+              <label className="form-label small">Tài khoản ngân hàng bên mua</label>
+              <input
+                className="form-control"
+                placeholder="Nhập tài khoản ngân hàng"
+                value={customer.custBankAccount}
+                onChange={(e) =>
+                  setCustomer({ ...customer, custBankAccount: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-md-6">
+              <label className="form-label small">Ngân hàng bên mua</label>
+              <input
+                className="form-control"
+                placeholder="Nhập tên ngân hàng"
+                value={customer.custBankName}
+                onChange={(e) =>
+                  setCustomer({ ...customer, custBankName: e.target.value })
+                }
+              />
+            </div>
           </div>
 
-          <div className="col-md-3">
-            <label className="form-label small">Mã số thuế</label>
-            <input
-              className="form-control"
-              value={customer.taxCode}
-              onChange={(e) =>
-                setCustomer({ ...customer, taxCode: e.target.value })
-              }
-            />
-          </div>
-          <div className="col-md-3">
-            <label className="form-label small">Thành phố / Tỉnh</label>
-            <input
-              className="form-control"
-              value={customer.custCity}
-              onChange={(e) =>
-                setCustomer({ ...customer, custCity: e.target.value })
-              }
-            />
-          </div>
-          <div className="col-md-3">
-            <label className="form-label small">Quận / Huyện</label>
-            <input
-              className="form-control"
-              value={customer.custDistrictName}
-              onChange={(e) =>
-                setCustomer({ ...customer, custDistrictName: e.target.value })
-              }
-            />
-          </div>
-          <div className="col-md-3">
-            <label className="form-label small">Số điện thoại</label>
-            <input
-              className="form-control"
-              value={customer.custPhone}
-              onChange={(e) =>
-                setCustomer({ ...customer, custPhone: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="col-md-6">
-            <label className="form-label small">Địa chỉ</label>
-            <input
-              className="form-control"
-              value={customer.custAddrs}
-              onChange={(e) =>
-                setCustomer({ ...customer, custAddrs: e.target.value })
-              }
-            />
-          </div>
-          <div className="col-md-3">
-            <label className="form-label small">Email nhận HĐ</label>
-            <input
-              type="email"
-              className="form-control"
-              value={customer.email}
-              onChange={(e) =>
-                setCustomer({ ...customer, email: e.target.value })
-              }
-            />
-          </div>
-          <div className="col-md-3">
-            <label className="form-label small">Email CC</label>
-            <input
-              type="email"
-              className="form-control"
-              value={customer.emailCC}
-              onChange={(e) =>
-                setCustomer({ ...customer, emailCC: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="col-md-4">
-            <label className="form-label small">Tài khoản NH bên mua</label>
-            <input
-              className="form-control"
-              value={customer.custBankAccount}
-              onChange={(e) =>
-                setCustomer({ ...customer, custBankAccount: e.target.value })
-              }
-            />
-          </div>
-          <div className="col-md-4">
-            <label className="form-label small">Ngân hàng bên mua</label>
-            <input
-              className="form-control"
-              value={customer.custBankName}
-              onChange={(e) =>
-                setCustomer({ ...customer, custBankName: e.target.value })
-              }
-            />
-          </div>
         </div>
       </div>
 
@@ -719,7 +869,7 @@ export default function PublicInvoice() {
         <div className="card-header inv-card-header d-flex justify-content-between align-items-center">
           <span>
             <i className="ri-list-check me-2" />
-            III. Chi tiết Sản phẩm / Dịch vụ
+            Chi tiết Sản phẩm / Dịch vụ
           </span>
           <button className="btn btn-sm btn-add-row" onClick={addRow}>
             <i className="ri-add-line me-1" />
@@ -731,16 +881,16 @@ export default function PublicInvoice() {
             <table className="table table-hover mb-0 inv-table">
               <thead>
                 <tr className="small text-center">
-                  <th style={{ width: "4%" }}>#</th>
+                  <th style={{ width: "4%" }}>STT</th>
                   <th style={{ width: "8%" }}>Mã hàng</th>
-                  <th style={{ width: "22%" }}>Tên hàng / DV</th>
+                  <th style={{ width: "22%" }}>Tên hàng / Dịch vụ</th>
                   <th style={{ width: "7%" }}>Loại</th>
-                  <th style={{ width: "6%" }}>ĐVT</th>
-                  <th style={{ width: "7%" }}>SL</th>
+                  <th style={{ width: "6%" }}>Đơn vị tính</th>
+                  <th style={{ width: "7%" }}>Số lượng</th>
                   <th style={{ width: "12%" }}>Đơn giá</th>
                   <th style={{ width: "10%" }}>Thành tiền</th>
-                  <th style={{ width: "7%" }}>CK%</th>
-                  <th style={{ width: "9%" }}>Tiền CK</th>
+                  <th style={{ width: "7%" }}>Tỉ lệ chiết khấu (%)</th>
+                  <th style={{ width: "9%" }}>Tiền chiết khấu</th>
                   <th style={{ width: "7%" }}>Thuế</th>
                   <th style={{ width: "9%" }}>Tiền thuế</th>
                   <th style={{ width: "4%" }}></th>
@@ -780,9 +930,9 @@ export default function PublicInvoice() {
                             updateProduct(p.id, "itmKnd", +e.target.value)
                           }
                         >
-                          <option value={1}>HH/DV</option>
-                          <option value={2}>KM</option>
-                          <option value={3}>CK</option>
+                          <option value={1}>Hàng hóa/Dịch vụ</option>
+                          <option value={2}>Khuyến mãi</option>
+                          <option value={3}>Chiết khấu</option>
                           <option value={4}>Ghi chú</option>
                         </select>
                       </td>
@@ -875,7 +1025,7 @@ export default function PublicInvoice() {
       <div className="card inv-card mb-4">
         <div className="card-header inv-card-header">
           <i className="ri-calculator-line me-2" />
-          IV. Tổng kết
+          Tổng kết
         </div>
         <div className="card-body">
           <div className="row g-3 justify-content-end">

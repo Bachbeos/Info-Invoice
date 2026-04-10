@@ -29,7 +29,7 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.AuthenticateAndSaveSessionAsync(request);
 
-        if (result.IsSuccess)
+        if (result.Code == 200)
         {
             return Ok(result);
         }
@@ -39,13 +39,14 @@ public class AuthController : ControllerBase
 
     // GET: api/auth/provider-configs
     [HttpGet("provider-configs")]
-    public async Task<IActionResult> GetProviderConfigs([FromQuery] string username, [FromQuery] int providerId)
+    public async Task<IActionResult> GetProviderConfigs([FromQuery] int providerId)
     {
-        if (string.IsNullOrEmpty(username) || providerId <= 0)
+        if (providerId <= 0)
         {
-            return BadRequest(new { message = "Thiếu thông tin username hoặc providerId hợp lệ" });
+            return BadRequest(new { message = "Thiếu thông tin providerId hợp lệ" });
         }
-        var configs = await _authService.GetUserSuggestionsAsync(username, providerId);
+
+        var configs = await _authService.GetProviderConfigsAsync(providerId);
         return Ok(configs);
     }
 }

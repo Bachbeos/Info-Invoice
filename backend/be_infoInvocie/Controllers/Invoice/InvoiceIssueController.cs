@@ -17,7 +17,7 @@ public class InvoiceIssueController(IInvoiceIssueService service, IUserContext u
     public async Task<IActionResult> IssueInvoice([FromBody] InvoiceIssuanceDto request)
     {
         var result = await service.IssueInvoiceAsync(request, userContext.UserId, userContext.TaxId);
-        return result.IsSuccess ? Ok(result) : BadRequest(result);
+        return result.Code == 200 ? Ok(result) : BadRequest(result);
     }
 
     // POST: api/invoice/replace
@@ -38,5 +38,33 @@ public class InvoiceIssueController(IInvoiceIssueService service, IUserContext u
         return success
             ? Ok(ApiResult<bool>.Success(true, "Lưu hóa đơn điều chỉnh thành công!"))
             : BadRequest(ApiResult<bool>.Failure(400, "Lưu hóa đơn điều chỉnh thất bại!"));
+    }
+
+    // GET: api/invoice/list
+    [HttpGet("list")]
+    public async Task<IActionResult> GetInvoicesList(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null)
+    {
+        var request = new InvoiceListRequest
+        {
+            Page = page,
+            PageSize = pageSize,
+            FromDate = fromDate,
+            ToDate = toDate
+        };
+
+        var result = await service.GetInvoicesForReplaceAdjustAsync(userContext.UserId, userContext.TaxId, request);
+        return result.Code == 200 ? Ok(result) : BadRequest(result);
+    }
+
+    // GET: api/invoice/{id}
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetInvoiceDetail(int id)
+    {
+        var result = await service.GetInvoiceDetailAsync(id, userContext.UserId, userContext.TaxId);
+        return result.Code == 200 ? Ok(result) : NotFound(result);
     }
 }
