@@ -1,28 +1,7 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
-import type { ReactElement } from "react";
-import Login from "../pages/auth/login/login";
+import { createBrowserRouter } from "react-router-dom";
+import Login from "../features/auth/login";
 import PublicInvoice from "../pages/public-invoice/publicInvoice";
-import { getToken } from "../utils/token";
-
-function AuthRedirect() {
-  return <Navigate to={getToken() ? "/public-invoice" : "/login"} replace />;
-}
-
-function GuestOnlyRoute({ children }: { children: ReactElement }) {
-  if (getToken()) {
-    return <Navigate to="/public-invoice" replace />;
-  }
-
-  return children;
-}
-
-function ProtectedRoute({ children }: { children: ReactElement }) {
-  if (!getToken()) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return children;
-}
+import { AuthRedirect, GuestOnlyRoute, ProtectedRoute } from "../components/auth-guard/auth-guard";
 
 const router = createBrowserRouter([
   {
@@ -33,7 +12,7 @@ const router = createBrowserRouter([
     path: "/login",
     element: (
       <GuestOnlyRoute>
-      <Login />
+        <Login />
       </GuestOnlyRoute>
     ),
   },
@@ -41,7 +20,7 @@ const router = createBrowserRouter([
     path: "/public-invoice",
     element: (
       <ProtectedRoute>
-      <PublicInvoice />
+        <PublicInvoice />
       </ProtectedRoute>
     ),
   },

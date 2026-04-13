@@ -1,0 +1,98 @@
+.auth-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: #f3f6f9;
+    font-family:
+        "Inter",
+        system-ui,
+        -apple-system,
+        sans-serif;
+
+    .container {
+        display: flex;
+        justify-content: center;
+    }
+
+    .login-card {
+        overflow: hidden;
+        border-radius: 12px;
+        max-width: 1000px;
+        width: 100%;
+    }
+
+    .left-panel {
+        background: linear-gradient(135deg, #405189, #0ab39c);
+        color: white;
+        padding: 40px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        .bg-overlay {
+            background: rgba(64, 81, 137, 0.1);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .z-1 {
+            position: relative;
+            z-index: 1;
+        }
+    }
+
+    .form-label {
+        font-weight: 500;
+        font-size: 0.85rem;
+        color: #495057;
+    }
+
+    .form-control:focus {
+        border-color: #405189;
+        box-shadow: 0 0 0 0.2rem rgba(64, 81, 137, 0.1);
+    }
+
+    .info-box {
+        background: #fdf7e3;
+        border-left: 4px solid #ffcc00;
+        padding: 10px;
+        font-size: 0.75rem;
+        margin-bottom: 20px;
+        color: #856404;
+    }
+
+    .lang-box {
+        width: 100%;
+        background: #fff;
+        border: 1px solid #e9ebec;
+        padding: 8px;
+        border-radius: 6px;
+        text-align: center;
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: all 0.3s;
+        appearance: none;
+
+        &:hover {
+            background: #f8f9fa;
+        }
+
+        &:focus-visible {
+            outline: 2px solid #405189;
+            outline-offset: 2px;
+        }
+
+        &.active {
+            border-color: #405189;
+            background: rgba(64, 81, 137, 0.05);
+            color: #405189;
+            font-weight: bold;
+        }
+    }
+}
