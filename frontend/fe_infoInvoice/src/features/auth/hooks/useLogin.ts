@@ -84,7 +84,7 @@ export function useLogin() {
             if (response.code === 200) {
                 setToken(response.data.accessToken);
                 showToast("Đăng nhập thành công vào hệ thống", "success");
-                navigate("/public-invoice");
+                navigate("/invoice");
             }
         } catch (error) {
             const message =

@@ -1,7 +1,8 @@
 import { createBrowserRouter } from "react-router-dom";
 import Login from "../features/auth/login";
-import PublicInvoice from "../pages/public-invoice/publicInvoice";
 import { AuthRedirect, GuestOnlyRoute, ProtectedRoute } from "../components/auth-guard/auth-guard";
+import MainLayout from "../components/layout/main-layout";
+import InvoiceList from "../features/invoice/invoice";
 
 const router = createBrowserRouter([
   {
@@ -17,12 +18,18 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/public-invoice",
+    path: "/invoice",
     element: (
       <ProtectedRoute>
-        <PublicInvoice />
+        <MainLayout />
       </ProtectedRoute>
     ),
+    children: [
+      {
+        index: true,
+        element: <InvoiceList />,
+      },
+    ],
   },
   {
     path: "*",

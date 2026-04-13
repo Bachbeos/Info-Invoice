@@ -43,22 +43,6 @@
   },
   {
     "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceIssueController",
-    "Method": "GetInvoiceDetail",
-    "RelativePath": "api/invoice/{id}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceIssueController",
     "Method": "AdjustInvoice",
     "RelativePath": "api/invoice/adjust",
     "HttpMethod": "POST",
@@ -106,6 +90,22 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceListController",
+    "Method": "GetDetail",
+    "RelativePath": "api/invoice/get/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceIssueController",
     "Method": "IssueInvoice",
     "RelativePath": "api/invoice/issue",
@@ -122,30 +122,30 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceIssueController",
-    "Method": "GetInvoicesList",
+    "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceListController",
+    "Method": "GetInvoices",
     "RelativePath": "api/invoice/list",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "page",
+        "Name": "Page",
         "Type": "System.Int32",
         "IsRequired": false
       },
       {
-        "Name": "pageSize",
+        "Name": "PageSize",
         "Type": "System.Int32",
         "IsRequired": false
       },
       {
-        "Name": "fromDate",
+        "Name": "FromDate",
         "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "IsRequired": false
       },
       {
-        "Name": "toDate",
+        "Name": "ToDate",
         "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "IsRequired": false
       }

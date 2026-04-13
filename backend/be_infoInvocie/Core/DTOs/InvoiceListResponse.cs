@@ -16,9 +16,8 @@
         public string InvRef { get; set; } = null!;
         public decimal InvTotalAmount { get; set; }
         public string ExchCd { get; set; } = "VND";
-        public DateTime CreatedDate { get; set; }
+        public DateTime CreatedAt { get; set; }
         public int InvoiceType { get; set; }
-        public bool Status { get; set; }
     }
 
     public class InvoiceDetailDto
@@ -38,7 +37,7 @@
         public decimal ExchRt { get; set; }
         public string PaidTp { get; set; } = "CK";
         public string? Note { get; set; }
-        public int HdNo { get; set; }
+        public string? HdNo { get; set; } 
         public DateTime CreatedDate { get; set; }
         public string ClsfNo { get; set; } = string.Empty;
         public string SpcfNo { get; set; } = string.Empty;

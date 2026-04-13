@@ -49,6 +49,9 @@ builder.Services.AddScoped<ITctService, TctService>();
 builder.Services.AddScoped<IInvoiceValidator, InvoiceValidator>();
 builder.Services.AddScoped<IUserContext, UserContext>();
 
+builder.Services.AddScoped<IInvoiceListRepository, InvoiceListRepository>();
+builder.Services.AddScoped<IInvoiceListService, InvoiceListService>();
+
 
 
 builder.Services.AddCors(options =>

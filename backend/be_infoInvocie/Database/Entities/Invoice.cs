@@ -37,7 +37,6 @@ public class Invoice
     [Column("bank_account")] public string? BankAccount { get; set; }
     [MaxLength(50)]
     [Column("bank_name")] public string? BankName { get; set; }
-    [Column("status")] public bool Status { get; set; }
     [Column("sys_created_at")] public DateTime CreatedAt { get; set; }
 
     public virtual ICollection<InvoiceItem> Items { get; set; } = new List<InvoiceItem>();

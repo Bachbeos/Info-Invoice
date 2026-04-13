@@ -51,9 +51,8 @@ public class InvoiceIssueRepository : IInvoiceIssueRepository
                 InvRef = i.InvRef ?? string.Empty,
                 InvTotalAmount = i.InvTotalAmount,
                 ExchCd = i.ExchCd ?? "VND",
-                CreatedDate = i.CreatedDate,
+                //CreatedAt = i.CreatedAt,
                 InvoiceType = i.InvoiceType,
-                Status = i.Status
             })
             .ToListAsync();
 
@@ -88,7 +87,7 @@ public class InvoiceIssueRepository : IInvoiceIssueRepository
                 ExchRt = i.ExchRt,
                 BankAccount = i.BankAccount,
                 BankName = i.BankName,
-                Status = i.Status,
+                //Status = i.Status,
                 CreatedAt = i.CreatedAt,
                 InvoiceType = i.InvoiceType,
                 TransactionIdOld = i.TransactionIdOld,
