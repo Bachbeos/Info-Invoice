@@ -8,7 +8,7 @@ const AuthService = {
     login: (body: AuthRequest): Promise<AuthResponse> =>
         apiClient.post<AuthResponse>(endpoint.auth.login, body),
 
-    getProviders: () => apiClient.get<ProviderResponse[]>(endpoint.invoice.providers),
+    getProviders: () => apiClient.get<ProviderResponse[]>(endpoint.auth.providers),
 
     getProviderConfigs: (providerId: number): Promise<ProviderConfig[]> =>
         apiClient.get<ProviderConfig[]>(endpoint.auth.providerConfigs, {

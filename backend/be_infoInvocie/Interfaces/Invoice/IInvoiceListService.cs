@@ -1,4 +1,4 @@
-﻿using be_infoInvoice.Core.DTOs;
+using be_infoInvoice.Core.DTOs;
 
 namespace be_infoInvoice.Interfaces.Invoice
 {

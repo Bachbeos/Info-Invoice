@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import Table from "../../components/table/table";
 import ActionTable from "../../components/table/action-table";
@@ -27,6 +27,7 @@ const formatDate = (value?: string) => {
 
 export default function InvoiceList() {
     const [viewState, setViewState] = useState<ViewState>({ view: "list" });
+    const [deletingId, setDeletingId] = useState<number | null>(null);
 
     const {
         items,
@@ -39,7 +40,7 @@ export default function InvoiceList() {
         refresh,
     } = useInvoiceList();
 
-    const handleOpenAction = async (mode: "replace" | "adjust", item: InvoiceItem) => {
+    const handleOpenAction = useCallback(async (mode: "replace" | "adjust", item: InvoiceItem) => {
         try {
             const res = await InvoiceService.getInvoiceDetail(item.id);
             if (res.code === 200 && res.data) {
@@ -52,7 +53,42 @@ export default function InvoiceList() {
             toast.error("Không lấy được chi tiết hóa đơn");
             setViewState({ view: "form", mode });
         }
-    };
+    }, []);
+
+    const handleViewDetail = useCallback(async (item: InvoiceItem) => {
+        try {
+            const res = await InvoiceService.getInvoiceDetail(item.id);
+            if (res.code === 200 && res.data) {
+                setViewState({ view: "form", mode: "view", invoiceDetail: res.data });
+            } else {
+                toast.error(res.message || "Không lấy được chi tiết hóa đơn");
+            }
+        } catch {
+            toast.error("Không lấy được chi tiết hóa đơn");
+        }
+    }, []);
+
+    const handleDeleteInvoice = useCallback(async (item: InvoiceItem) => {
+        if (deletingId === item.id) return;
+
+        const confirmed = window.confirm(`Bạn có chắc chắn muốn xóa hóa đơn #${item.id}?`);
+        if (!confirmed) return;
+
+        setDeletingId(item.id);
+        try {
+            const res = await InvoiceService.delete(item.id);
+            if (res?.code === 200) {
+                toast.success(res.message || "Xóa hóa đơn thành công");
+                refresh();
+                return;
+            }
+            toast.error(res?.message || "Xóa hóa đơn thất bại");
+        } catch {
+            toast.error("Không thể xóa hóa đơn");
+        } finally {
+            setDeletingId(null);
+        }
+    }, [deletingId, refresh]);
 
     const columns: Column[] = useMemo(
         () => [
@@ -86,15 +122,16 @@ export default function InvoiceList() {
                 label: "Thao tác",
                 render: (_v, item: InvoiceItem) => (
                     <ActionTable
-                        onView={() => toast.info(`Xem hóa đơn #${item.id}`)}
+                        onView={() => void handleViewDetail(item)}
                         onReplace={() => void handleOpenAction("replace", item)}
                         onAdjust={() => void handleOpenAction("adjust", item)}
-                        onDelete={() => toast.info(`Xóa nháp hóa đơn #${item.id}`)}
+                        onDelete={() => void handleDeleteInvoice(item)}
+                        isDraft
                     />
                 ),
             },
         ],
-        [items],
+        [handleOpenAction, handleDeleteInvoice, handleViewDetail],
     );
 
     const tableData = useMemo(

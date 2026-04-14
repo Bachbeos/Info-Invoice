@@ -87,10 +87,10 @@ D:\Bach\Info-Invoice\backend\be_infoInvocie\obj\Debug\net9.0\staticwebassets.bui
 D:\Bach\Info-Invoice\backend\be_infoInvocie\obj\Debug\net9.0\staticwebassets.build.json.cache
 D:\Bach\Info-Invoice\backend\be_infoInvocie\obj\Debug\net9.0\staticwebassets.development.json
 D:\Bach\Info-Invoice\backend\be_infoInvocie\obj\Debug\net9.0\staticwebassets.build.endpoints.json
-D:\Bach\Info-Invoice\backend\be_infoInvocie\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
 D:\Bach\Info-Invoice\backend\be_infoInvocie\obj\Debug\net9.0\be_infoI.1670A80A.Up2Date
 D:\Bach\Info-Invoice\backend\be_infoInvocie\obj\Debug\net9.0\be_infoInvoice.dll
 D:\Bach\Info-Invoice\backend\be_infoInvocie\obj\Debug\net9.0\refint\be_infoInvoice.dll
 D:\Bach\Info-Invoice\backend\be_infoInvocie\obj\Debug\net9.0\be_infoInvoice.pdb
 D:\Bach\Info-Invoice\backend\be_infoInvocie\obj\Debug\net9.0\be_infoInvocie.genruntimeconfig.cache
 D:\Bach\Info-Invoice\backend\be_infoInvocie\obj\Debug\net9.0\ref\be_infoInvoice.dll
+D:\Bach\Info-Invoice\backend\be_infoInvocie\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt

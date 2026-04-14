@@ -1,11 +1,11 @@
 namespace be_infoInvoice.Core.DTOs;
 
-public class InvoiceReplaceDto : InvoiceIssuanceDto
+public class InvoiceReplaceDto : InvoicePublicDto
 {
     public string TransactionIdOld { get; set; } = null!;
 }
 
-public class InvoiceAdjustDto : InvoiceIssuanceDto
+public class InvoiceAdjustDto : InvoicePublicDto
 {
     public string TransactionIdOld { get; set; } = null!;
 }

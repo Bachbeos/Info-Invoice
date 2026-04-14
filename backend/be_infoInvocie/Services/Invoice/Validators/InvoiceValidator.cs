@@ -5,8 +5,11 @@ namespace be_infoInvoice.Services.Invoice.Validators;
 
 public class InvoiceValidator : IInvoiceValidator
 {
-    public (bool IsValid, string Message) ValidateInvoice(InvoiceIssuanceDto dto)
+    public (bool IsValid, string Message) ValidateInvoice(InvoicePublicDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.SpcfNo))
+            return (false, "Mẫu số hóa đơn là bắt buộc.");
+
         if (dto.InvSubTotal <= 0)
             return (false, "Tổng tiền hàng là bắt buộc và phải lớn hơn 0.");
 
@@ -18,9 +21,6 @@ public class InvoiceValidator : IInvoiceValidator
 
         if (string.IsNullOrWhiteSpace(dto.ClsfNo))
             return (false, "Phân loại hóa đơn là bắt buộc.");
-
-        if (string.IsNullOrWhiteSpace(dto.SpcfNo))
-            return (false, "Mẫu số hóa đơn là bắt buộc.");
 
         if (dto.Customer == null)
             return (false, "Thông tin khách hàng không được để trống.");

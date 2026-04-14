@@ -3,8 +3,9 @@ using be_infoInvoice.Core.DTOs;
 
 namespace be_infoInvoice.Interfaces.Invoice;
 
-public interface IInvoiceIssueRepository
+public interface IInvoiceActionRepository
 {
     Task<bool> CreateInvoiceAsync(Database.Entities.Invoice invoice);
     Task<UserAccessConfig?> GetFirstAccessConfigAsync(int userId);
+    Task<bool> DeleteAsync(int userId, int taxId, int id);
 }

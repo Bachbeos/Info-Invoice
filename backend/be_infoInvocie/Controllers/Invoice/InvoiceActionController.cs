@@ -9,13 +9,13 @@ namespace be_infoInvoice.Controllers.Invoice;
 [Route("api/invoice")]
 [ApiController]
 [Authorize]
-public class InvoiceIssueController(IInvoiceIssueService service, IUserContext userContext) : ControllerBase
+public class InvoiceActionController(IInvoiceActionService service, IUserContext userContext) : ControllerBase
 {
 
-    [HttpPost("issue")]
-    public async Task<IActionResult> IssueInvoice([FromBody] InvoiceIssuanceDto request)
+    [HttpPost("public")]
+    public async Task<IActionResult> PublicInvoice([FromBody] InvoicePublicDto request)
     {
-        var result = await service.IssueInvoiceAsync(request, userContext.UserId, userContext.TaxId);
+        var result = await service.PublicInvoiceAsync(request, userContext.UserId, userContext.TaxId);
         return result.Code == 200 ? Ok(result) : BadRequest(result);
     }
 
@@ -35,5 +35,16 @@ public class InvoiceIssueController(IInvoiceIssueService service, IUserContext u
         return success
             ? Ok(ApiResult<bool>.Success(true, "Lưu hóa đơn điều chỉnh thành công!"))
             : BadRequest(ApiResult<bool>.Failure(400, "Lưu hóa đơn điều chỉnh thất bại!"));
+    }
+
+    [HttpDelete("delete/{id:int}")]
+    public async Task<IActionResult> DeleteInvoice(int id)
+    {
+        var result = await service.DeleteInvoiceAsync(
+            id,
+            userContext.UserId,
+            userContext.TaxId);
+
+        return result.Code == 200 ? Ok(result) : NotFound(result);
     }
 }

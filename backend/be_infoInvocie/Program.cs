@@ -31,8 +31,8 @@ builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 
-builder.Services.AddScoped<IInvoiceIssueRepository, InvoiceIssueRepository>();
-builder.Services.AddScoped<IInvoiceIssueService, InvoiceIssueService>();
+builder.Services.AddScoped<IInvoiceActionRepository, InvoiceActionRepository>();
+builder.Services.AddScoped<IInvoiceActionService, InvoiceActionService>();
 
 builder.Services.AddScoped<IInvoiceExportRepository, InvoiceExportRepository>();
 builder.Services.AddScoped<IInvoiceExportService, InvoiceExportService>();

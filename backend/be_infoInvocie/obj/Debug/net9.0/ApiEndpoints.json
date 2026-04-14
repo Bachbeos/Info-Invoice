@@ -42,7 +42,7 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceIssueController",
+    "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceActionController",
     "Method": "AdjustInvoice",
     "RelativePath": "api/invoice/adjust",
     "HttpMethod": "POST",
@@ -68,6 +68,22 @@
       {
         "Name": "request",
         "Type": "be_infoInvoice.Core.DTOs.TaxCheckRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceActionController",
+    "Method": "DeleteInvoice",
+    "RelativePath": "api/invoice/delete/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
         "IsRequired": true
       }
     ],
@@ -100,22 +116,6 @@
       {
         "Name": "id",
         "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceIssueController",
-    "Method": "IssueInvoice",
-    "RelativePath": "api/invoice/issue",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "request",
-        "Type": "be_infoInvoice.Core.DTOs.InvoiceIssuanceDto",
         "IsRequired": true
       }
     ],
@@ -169,7 +169,23 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceIssueController",
+    "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceActionController",
+    "Method": "PublicInvoice",
+    "RelativePath": "api/invoice/public",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "be_infoInvoice.Core.DTOs.InvoicePublicDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceActionController",
     "Method": "ReplaceInvoice",
     "RelativePath": "api/invoice/replace",
     "HttpMethod": "POST",

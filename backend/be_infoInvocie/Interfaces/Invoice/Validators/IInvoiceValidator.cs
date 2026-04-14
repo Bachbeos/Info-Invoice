@@ -5,7 +5,7 @@ namespace be_infoInvoice.Interfaces.Invoice.Validators;
 
 public interface IInvoiceValidator
 {
-    (bool IsValid, string Message) ValidateInvoice(InvoiceIssuanceDto dto);
+    (bool IsValid, string Message) ValidateInvoice(InvoicePublicDto dto);
 }
 
 

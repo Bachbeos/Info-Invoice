@@ -134,6 +134,70 @@ export interface IInvoiceDetailProduct {
     totalAmt?: number;
 }
 
+export interface IInvoiceDetailCustomerApi {
+    custCd?: string;
+    custNm?: string;
+    custCompany?: string;
+    taxCode?: string;
+    custCity?: string;
+    custDistrict?: string;
+    custAddrs?: string;
+    custPhone?: string;
+    custBankAccount?: string;
+    custBankName?: string;
+    email?: string;
+    emailCc?: string;
+}
+
+export interface IInvoiceDetailProductApi {
+    id?: number;
+    itmCd?: string;
+    itmName?: string;
+    itmKnd?: number | string;
+    unitNm?: string;
+    qty?: number;
+    unprc?: number;
+    amt?: number;
+    discRate?: number;
+    discAmt?: number;
+    vatRt?: string | number;
+    vatAmt?: number;
+    totalAmt?: number;
+}
+
+export interface IInvoiceDetailApi {
+    id: number;
+    userId?: number;
+    taxId?: number;
+    transactionId?: string;
+    transactionID?: string;
+    invRef?: string;
+    poNo?: string;
+    invSubTotal?: number;
+    invVatRate?: string | null;
+    invDiscAmount?: number;
+    invVatAmount?: number;
+    invTotalAmount?: number;
+    exchCd?: string;
+    exchRt?: number;
+    paidTp?: string;
+    note?: string;
+    hdNo?: number | string | null;
+    createdDate?: string;
+    clsfNo?: string;
+    spcfNo?: string;
+    templateCode?: string;
+    bankAccount?: string;
+    bankName?: string;
+    status?: boolean;
+    invoiceType?: number;
+    noteDesc?: string | null;
+    invoiceNo?: string;
+    customer?: IInvoiceDetailCustomerApi;
+    items?: IInvoiceDetailProductApi[];
+    products?: IInvoiceDetailProductApi[];
+}
+
 export interface IInvoiceDetail {
     id: number;
     transactionId?: string;
@@ -161,6 +225,69 @@ export interface IInvoiceDetail {
     products?: IInvoiceDetailProduct[];
 }
 
+export const normalizeInvoiceDetail = (detail: IInvoiceDetailApi): IInvoiceDetail => {
+    const rawProducts = detail.items ?? detail.products ?? [];
+    const normalizedHdNo = typeof detail.hdNo === "string" ? Number(detail.hdNo) : detail.hdNo;
+
+    return {
+        id: detail.id,
+        transactionId: detail.transactionId ?? detail.transactionID,
+        transactionID: detail.transactionID ?? detail.transactionId,
+        invoiceNo: detail.invoiceNo ?? (detail.hdNo != null ? String(detail.hdNo) : undefined),
+        invRef: detail.invRef,
+        poNo: detail.poNo,
+        paidTp: detail.paidTp,
+        clsfNo: detail.clsfNo,
+        spcfNo: detail.spcfNo,
+        templateCode: detail.templateCode,
+        hdNo: Number.isFinite(normalizedHdNo as number) ? (normalizedHdNo as number) : null,
+        createdDate: detail.createdDate,
+        exchCd: detail.exchCd,
+        exchRt: detail.exchRt,
+        bankAccount: detail.bankAccount,
+        bankName: detail.bankName,
+        invDiscAmount: detail.invDiscAmount,
+        invVatRate: detail.invVatRate,
+        invSubTotal: detail.invSubTotal,
+        invVatAmount: detail.invVatAmount,
+        invTotalAmount: detail.invTotalAmount,
+        note: detail.note,
+        customer: detail.customer
+            ? {
+                custCd: detail.customer.custCd,
+                custNm: detail.customer.custNm,
+                custCompany: detail.customer.custCompany,
+                taxCode: detail.customer.taxCode,
+                custCity: detail.customer.custCity,
+                custDistrictName: detail.customer.custDistrict,
+                custAddrs: detail.customer.custAddrs,
+                custPhone: detail.customer.custPhone,
+                custBankAccount: detail.customer.custBankAccount,
+                custBankName: detail.customer.custBankName,
+                email: detail.customer.email,
+                emailCC: detail.customer.emailCc,
+            }
+            : undefined,
+        products: rawProducts.map((product) => ({
+            id: product.id,
+            itmCd: product.itmCd,
+            itmName: product.itmName,
+            itmKnd: typeof product.itmKnd === "string" ? Number(product.itmKnd) : product.itmKnd,
+            unitNm: product.unitNm,
+            qty: product.qty,
+            unprc: product.unprc,
+            amt: product.amt,
+            discRate: product.discRate,
+            discAmt: product.discAmt,
+            vatRt: product.vatRt != null ? String(product.vatRt) : undefined,
+            vatAmt: product.vatAmt,
+            totalAmt: product.totalAmt,
+        })),
+    };
+};
+
+export type IInvoiceDetailApiResponse = IApiResult<IInvoiceDetailApi>;
+
 export type IInvoiceDetailResponse = IApiResult<IInvoiceDetail>;
 
-export type ActionMode = "issue" | "replace" | "adjust";
+export type ActionMode = "issue" | "replace" | "adjust" | "view";

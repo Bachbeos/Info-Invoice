@@ -7,18 +7,18 @@ namespace be_infoInvoice.Services.Invoice;
 
 public enum InvoiceType { Public = 1, Replace = 2, Adjust = 3 }
 
-public class InvoiceIssueService : IInvoiceIssueService
+public class InvoiceActionService : IInvoiceActionService
 {
-    private readonly IInvoiceIssueRepository _repository;
+    private readonly IInvoiceActionRepository _repository;
     private readonly IInvoiceValidator _validator;
 
-    public InvoiceIssueService(IInvoiceIssueRepository repository, IInvoiceValidator validator)
+    public InvoiceActionService(IInvoiceActionRepository repository, IInvoiceValidator validator)
     {
         _repository = repository;
         _validator = validator;
     }
 
-    public async Task<ApiResult<InvoiceIssueResponse>> IssueInvoiceAsync(InvoiceIssuanceDto dto, int userId, int taxId)
+    public async Task<ApiResult<InvoiceIssueResponse>> PublicInvoiceAsync(InvoicePublicDto dto, int userId, int taxId)
     {
         var (isValid, validationMessage) = _validator.ValidateInvoice(dto);
         if (!isValid)
@@ -62,8 +62,25 @@ public class InvoiceIssueService : IInvoiceIssueService
         return invoice != null;
     }
 
+    public async Task<ApiResult<bool>> DeleteInvoiceAsync(int id, int userId, int taxId)
+    {
+        if (userId <= 0 || taxId <= 0)
+        {
+            return ApiResult<bool>.Failure(401, "Thông tin xác thực không hợp lệ.");
+        }
+
+        var deleted = await _repository.DeleteAsync(id, userId, taxId);
+
+        if (!deleted)
+        {
+            return ApiResult<bool>.Failure(404, "Không tìm thấy hóa đơn hoặc bạn không có quyền xóa.");
+        }
+
+        return ApiResult<bool>.Success(true, "Xóa hóa đơn thành công.");
+    }
+
     private async Task<Database.Entities.Invoice?> SaveInvoiceToDbAsync(
-        InvoiceIssuanceDto dto, int userId, int taxId, InvoiceType type,
+        InvoicePublicDto dto, int userId, int taxId, InvoiceType type,
         string? oldId = null, string? noteDesc = null)
     {
         var invoice = MapBaseInvoice(dto, userId, taxId);
@@ -76,7 +93,7 @@ public class InvoiceIssueService : IInvoiceIssueService
     }
 
 
-    private static Database.Entities.Invoice MapBaseInvoice(InvoiceIssuanceDto dto, int userId, int taxId)
+    private static Database.Entities.Invoice MapBaseInvoice(InvoicePublicDto dto, int userId, int taxId)
     {
         return new Database.Entities.Invoice
         {

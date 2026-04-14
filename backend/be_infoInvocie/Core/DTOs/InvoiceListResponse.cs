@@ -1,4 +1,4 @@
-﻿namespace be_infoInvoice.Core.DTOs
+namespace be_infoInvoice.Core.DTOs
 {
     public class InvoiceListResponse
     {
@@ -73,7 +73,7 @@
         public int Id { get; set; }
         public string? ItmCd { get; set; }
         public string? ItmName { get; set; }
-        public int ItmKnd { get; set; }
+        public string? ItmKnd { get; set; }
         public string? UnitNm { get; set; }
         public decimal Qty { get; set; }
         public decimal Unprc { get; set; }

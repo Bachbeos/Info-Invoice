@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace be_infoInvoice.Core.DTOs;
 
-public class InvoiceIssuanceDto {
+public class InvoicePublicDto {
     public string TransactionId { get; set; } = null!;
     public string InvRef { get; set; } = null!;
     public string? PoNo { get; set; }

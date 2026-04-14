@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace be_infoInvoice.Repositories.Invoice;
 
-public class InvoiceIssueRepository : IInvoiceIssueRepository
+public class InvoiceActionRepository : IInvoiceActionRepository
 {
     private readonly AppDbContext _context;
 
-    public InvoiceIssueRepository(AppDbContext context)
+    public InvoiceActionRepository(AppDbContext context)
     {
         _context = context;
     }
@@ -87,7 +87,6 @@ public class InvoiceIssueRepository : IInvoiceIssueRepository
                 ExchRt = i.ExchRt,
                 BankAccount = i.BankAccount,
                 BankName = i.BankName,
-                //Status = i.Status,
                 CreatedAt = i.CreatedAt,
                 InvoiceType = i.InvoiceType,
                 TransactionIdOld = i.TransactionIdOld,
@@ -130,5 +129,18 @@ public class InvoiceIssueRepository : IInvoiceIssueRepository
                 }).ToList()
             })
             .FirstOrDefaultAsync();
+    }
+
+    public async Task<bool> DeleteAsync(int id, int taxId, int userId)
+    {
+        var invoice = await _context.Invoices
+            .FirstOrDefaultAsync(i => i.Id == id && i.UserId == userId && i.TaxId == taxId);
+
+        if (invoice == null) return false;
+
+        _context.Invoices.Remove(invoice);
+
+        await _context.SaveChangesAsync();
+        return true;
     }
 }
