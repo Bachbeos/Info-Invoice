@@ -12,29 +12,29 @@ namespace be_infoInvoice.Controllers.Invoice;
 public class InvoiceActionController(IInvoiceActionService service, IUserContext userContext) : ControllerBase
 {
 
-    [HttpPost("public")]
-    public async Task<IActionResult> PublicInvoice([FromBody] InvoicePublicDto request)
+    [HttpPost("add")]
+    public async Task<IActionResult> AddInvoice([FromBody] InvoiceAddDto request)
     {
-        var result = await service.PublicInvoiceAsync(request, userContext.UserId, userContext.TaxId);
+        var result = await service.AddInvoiceAsync(request, userContext.UserId, userContext.TaxId);
         return result.Code == 200 ? Ok(result) : BadRequest(result);
     }
 
-    [HttpPost("replace")]
-    public async Task<IActionResult> ReplaceInvoice([FromBody] InvoiceReplaceDto dto)
-    {
-        var success = await service.ReplaceInvoiceAsync(dto, userContext.UserId, userContext.TaxId);
-        return success 
-            ? Ok(ApiResult<bool>.Success(true, "Lưu hóa đơn thành công")) 
-            : BadRequest(ApiResult<bool>.Failure(400, "Lưu hóa đơn thay thế thất bại"));
-    }
+    //[HttpPost("replace")]
+    //public async Task<IActionResult> ReplaceInvoice([FromBody] InvoiceReplaceDto dto)
+    //{
+    //    var success = await service.ReplaceInvoiceAsync(dto, userContext.UserId, userContext.TaxId);
+    //    return success 
+    //        ? Ok(ApiResult<bool>.Success(true, "Lưu hóa đơn thành công")) 
+    //        : BadRequest(ApiResult<bool>.Failure(400, "Lưu hóa đơn thay thế thất bại"));
+    //}
 
-    [HttpPost("adjust")]
-    public async Task<IActionResult> AdjustInvoice([FromBody] InvoiceAdjustDto dto)
+    [HttpPost("update")]
+    public async Task<IActionResult> UpdateInvoice([FromBody] InvoiceUpdateDto dto)
     {
-        var success = await service.AdjustInvoiceAsync(dto, userContext.UserId, userContext.TaxId);
+        var success = await service.UpdateInvoiceAsync(dto, userContext.UserId, userContext.TaxId);
         return success
-            ? Ok(ApiResult<bool>.Success(true, "Lưu hóa đơn điều chỉnh thành công!"))
-            : BadRequest(ApiResult<bool>.Failure(400, "Lưu hóa đơn điều chỉnh thất bại!"));
+            ? Ok(ApiResult<bool>.Success(true, "Lưu hóa đơn thành công!"))
+            : BadRequest(ApiResult<bool>.Failure(400, "Lưu hóa đơn thất bại!"));
     }
 
     [HttpDelete("delete/{id:int}")]

@@ -144,7 +144,6 @@ export default function ActionInvoice({ mode: initialMode, invoiceDetail, onBack
         setFormData((prev) => ({ ...prev, items: nextItems }));
     };
 
-    // Tính toán tổng cộng cho toàn hóa đơn
     const calculateTotals = () => {
         const subTotal = products.reduce((sum, item) => sum + (item.qty * item.unprc - item.discAmt), 0);
         const totalVat = products.reduce((sum, item) => sum + item.vatAmt, 0);
@@ -215,20 +214,23 @@ export default function ActionInvoice({ mode: initialMode, invoiceDetail, onBack
 
     return (
         <div className="invoice-container container my-4">
-            {/* Header & Buttons (Giữ nguyên logic UI của bạn) */}
             <div className="inv-header d-flex justify-content-between align-items-center mb-4 mt-4">
                 <div className="d-flex align-items-center gap-3">
                     <button type="button" className="btn btn-outline-secondary btn-sm" onClick={onBack}>
                         <i className="ri-arrow-left-line me-1" /> Quay lại
                     </button>
                     <h3 className="mb-0">
-                        {actionMode === "add" ? "Thêm Mới Hóa Đơn" : "Chi Tiết Hóa Đơn"}
+                        {isViewMode
+                            ? "Chi Tiết Hóa Đơn"
+                            : actionMode === "add"
+                                ? "Thêm Mới Hóa Đơn"
+                                : "Cập Nhật Hóa Đơn"
+                        }
                     </h3>
                 </div>
             </div>
 
             <fieldset disabled={isViewMode}>
-                {/*Thông tin Hóa đơn */}
                 <div className="card inv-card mb-4">
                     <div className="card-header inv-card-header">
                         <span>
@@ -414,7 +416,6 @@ export default function ActionInvoice({ mode: initialMode, invoiceDetail, onBack
                     </div>
                 </div>
 
-                {/* Thông tin Khách hàng */}
                 <div className="card inv-card mb-4">
                     <div className="card-header inv-card-header">
                         <span>
@@ -567,7 +568,6 @@ export default function ActionInvoice({ mode: initialMode, invoiceDetail, onBack
                     </div>
                 </div>
 
-                {/* III. Chi tiết Sản phẩm */}
                 <div className="card inv-card mb-4">
                     <div className="card-header inv-card-header d-flex justify-content-between align-items-center">
                         <span>
@@ -728,7 +728,6 @@ export default function ActionInvoice({ mode: initialMode, invoiceDetail, onBack
                     </div>
                 </div>
 
-                {/* IV. Tổng kết */}
                 <div className="card inv-card mb-4">
                     <div className="card-header inv-card-header">
                         <i className="ri-calculator-line me-2" />
@@ -781,13 +780,39 @@ export default function ActionInvoice({ mode: initialMode, invoiceDetail, onBack
                 </div>
             </fieldset>
 
-            {!isViewMode && (
-                <div className="d-flex justify-content-end">
-                    <button className="btn btn-primary btn-lg px-5" onClick={handleSubmit} disabled={isLoading}>
-                        {isLoading ? "Đang xử lý..." : "PHÁT HÀNH HÓA ĐƠN"}
+            <div className="d-flex justify-content-end gap-2 mt-4">
+                {isViewMode ? (
+                    <button
+                        type="button"
+                        className="btn btn-outline-secondary btn-lg px-5"
+                        onClick={onBack}
+                    >
+                        ĐÓNG
                     </button>
-                </div>
-            )}
+                ) : (
+                    <>
+                        <button
+                            type="button"
+                            className="btn btn-outline-secondary btn-lg px-5"
+                            onClick={onBack}
+                        >
+                            HỦY
+                        </button>
+                        <button
+                            className="btn btn-primary btn-lg px-5"
+                            onClick={handleSubmit}
+                            disabled={isLoading}
+                        >
+                            {isLoading
+                                ? "Đang xử lý..."
+                                : actionMode === "add"
+                                    ? "THÊM MỚI HÓA ĐƠN"
+                                    : "CẬP NHẬT HÓA ĐƠN"
+                            }
+                        </button>
+                    </>
+                )}
+            </div>
         </div>
     );
 }

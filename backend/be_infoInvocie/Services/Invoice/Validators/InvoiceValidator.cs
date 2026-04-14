@@ -1,32 +1,32 @@
-﻿using be_infoInvoice.Core.DTOs;
+using be_infoInvoice.Core.DTOs;
 using be_infoInvoice.Interfaces.Invoice.Validators;
 
 namespace be_infoInvoice.Services.Invoice.Validators;
 
 public class InvoiceValidator : IInvoiceValidator
 {
-    public (bool IsValid, string Message) ValidateInvoice(InvoicePublicDto dto)
+    public (bool IsValid, string Message) ValidateInvoice(InvoiceAddDto dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.SpcfNo))
+        if (string.IsNullOrWhiteSpace(dto.ClsfNo))
             return (false, "Mẫu số hóa đơn là bắt buộc.");
 
-        if (dto.InvSubTotal <= 0)
-            return (false, "Tổng tiền hàng là bắt buộc và phải lớn hơn 0.");
-
-        if (dto.InvVatAmount < 0)
-            return (false, "Tiền thuế không được âm.");
-
-        if (dto.InvTotalAmount <= 0)
-            return (false, "Tổng tiền thanh toán là bắt buộc và phải lớn hơn 0.");
-
-        if (string.IsNullOrWhiteSpace(dto.ClsfNo))
-            return (false, "Phân loại hóa đơn là bắt buộc.");
+        if (string.IsNullOrWhiteSpace(dto.SpcfNo))
+            return (false, "Ký hiệu hóa đơn là bắt buộc.");
 
         if (dto.Customer == null)
             return (false, "Thông tin khách hàng không được để trống.");
 
+        if (string.IsNullOrWhiteSpace(dto.Customer?.CustCd))
+            return (false, "Mã khách hàng là bắt buộc");
+
+        if (string.IsNullOrWhiteSpace(dto.Customer?.CustNm))
+            return (false, "Tên khách hàng là bắt buộc");
+
         if (string.IsNullOrWhiteSpace(dto.Customer.TaxCode))
             return (false, "Mã số thuế khách hàng không được để trống.");
+
+        if (string.IsNullOrWhiteSpace(dto.Customer.CustPhone))
+            return (false, "Số điện thoại khách hàng không được để trống.");
 
         if (dto.Products == null || !dto.Products.Any())
             return (false, "Hóa đơn phải có ít nhất một sản phẩm.");
@@ -42,6 +42,16 @@ public class InvoiceValidator : IInvoiceValidator
             if (p.TotalAmt < 0)
                 return (false, $"Sản phẩm '{p.ItmName}' có tổng tiền không được âm.");
         }
+
+        if (dto.InvSubTotal <= 0)
+            return (false, "Tổng tiền hàng là bắt buộc và phải lớn hơn 0.");
+
+        if (dto.InvVatAmount < 0)
+            return (false, "Tiền thuế không được âm.");
+
+        if (dto.InvTotalAmount <= 0)
+            return (false, "Tổng tiền thanh toán là bắt buộc và phải lớn hơn 0.");
+
 
         decimal expectedTotal = dto.InvSubTotal + dto.InvVatAmount - dto.InvDiscAmount;
 

@@ -5,9 +5,8 @@ const endpoint = {
     providers: "/auth/providers",
   },
   invoice: {
-    public: "/invoice/public",
-    replace: "/invoice/replace",
-    adjust: "/invoice/adjust",
+    add: "/invoice/add",
+    update: "/invoice/update",
     delete: "/invoice/delete",
     list: "/invoice/list",
     detail: "/invoice/get",

@@ -16,13 +16,10 @@ const InvoiceService = {
     },
 
     add: (payload: IInvoiceRequest) =>
-        apiClient.post<IInvoiceResponse>(endpoint.invoice.public, payload),
+        apiClient.post<IInvoiceResponse>(endpoint.invoice.add, payload),
 
     update: (payload: IActionInvoiceRequest) =>
-        apiClient.post<IActionInvoiceResponse>(endpoint.invoice.replace, payload),
-
-    adjust: (payload: IActionInvoiceRequest) =>
-        apiClient.post<IActionInvoiceResponse>(endpoint.invoice.adjust, payload),
+        apiClient.post<IActionInvoiceResponse>(endpoint.invoice.update, payload),
 
     delete: (id: number) =>
         apiClient.delete<{ code: number; message?: string }>(`${endpoint.invoice.delete}/${id}`),

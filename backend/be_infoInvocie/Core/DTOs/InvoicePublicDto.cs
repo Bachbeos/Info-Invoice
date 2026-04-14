@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace be_infoInvoice.Core.DTOs;
 
-public class InvoicePublicDto {
+public class InvoiceAddDto {
     public string TransactionId { get; set; } = null!;
     public string InvRef { get; set; } = null!;
     public string? PoNo { get; set; }
@@ -32,13 +32,13 @@ public class CustomerDto {
     public string? CustCompany { get; set; }
     public string? TaxCode { get; set; }
     public string? CustCity { get; set; }
-    public string? CustDistrictName { get; set; }
+    public string? CustDistrict { get; set; }
     public string? CustAddrs { get; set; }
     public string? CustPhone { get; set; }
     public string? CustBankAccount { get; set; }
     public string? CustBankName { get; set; }
     public string? Email { get; set; }
-    public string? EmailCC { get; set; }
+    public string? EmailCc { get; set; }
 }
 
 public class ItemDto

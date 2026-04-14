@@ -59,6 +59,40 @@ public class InvoiceActionRepository : IInvoiceActionRepository
         return (items, total);
     }
 
+    public async Task<bool> UpdateInvoiceAsync(Database.Entities.Invoice invoice)
+    {
+        var existingInvoice = await _context.Invoices
+            .Include(i => i.Customer)
+            .Include(i => i.Items)
+            .FirstOrDefaultAsync(i => i.TransactionId == invoice.TransactionId && i.UserId == invoice.UserId);
+
+        if (existingInvoice == null) return false;
+        
+        invoice.Id = existingInvoice.Id;
+        _context.Entry(existingInvoice).CurrentValues.SetValues(invoice);
+
+        if (existingInvoice.Customer != null && invoice.Customer != null)
+        {
+            invoice.Customer.Id = existingInvoice.Customer.Id;
+            invoice.Customer.InvoiceId = existingInvoice.Id;
+            _context.Entry(existingInvoice.Customer).CurrentValues.SetValues(invoice.Customer);
+        }
+        else if (existingInvoice.Customer == null && invoice.Customer != null)
+        {
+            invoice.Customer.InvoiceId = existingInvoice.Id;
+            existingInvoice.Customer = invoice.Customer;
+        }
+
+        _context.InvoiceItems.RemoveRange(existingInvoice.Items);
+        foreach (var item in invoice.Items)
+        {
+            item.InvoiceId = existingInvoice.Id;
+        }
+        existingInvoice.Items = invoice.Items;
+
+        return await _context.SaveChangesAsync() > 0;
+    }
+
     public async Task<Database.Entities.Invoice?> GetInvoiceByIdAsync(int invoiceId, int userId, int taxId)
     {
         return await _context.Invoices

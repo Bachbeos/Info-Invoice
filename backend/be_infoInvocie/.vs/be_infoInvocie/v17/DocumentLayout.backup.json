@@ -3,24 +3,24 @@
   "WorkspaceRootPath": "D:\\Bach\\Info-Invoice\\backend\\be_infoInvocie\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{3F46F6C4-3431-4379-B33F-6C22A0CE9CD4}|be_infoInvocie.csproj|d:\\bach\\info-invoice\\backend\\be_infoinvocie\\services\\invoice\\invoicelistservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3F46F6C4-3431-4379-B33F-6C22A0CE9CD4}|be_infoInvocie.csproj|solutionrelative:services\\invoice\\invoicelistservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3F46F6C4-3431-4379-B33F-6C22A0CE9CD4}|be_infoInvocie.csproj|d:\\bach\\info-invoice\\backend\\be_infoinvocie\\interfaces\\invoice\\iinvoicelistservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3F46F6C4-3431-4379-B33F-6C22A0CE9CD4}|be_infoInvocie.csproj|solutionrelative:interfaces\\invoice\\iinvoicelistservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3F46F6C4-3431-4379-B33F-6C22A0CE9CD4}|be_infoInvocie.csproj|d:\\bach\\info-invoice\\backend\\be_infoinvocie\\services\\invoice\\validators\\invoicevalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3F46F6C4-3431-4379-B33F-6C22A0CE9CD4}|be_infoInvocie.csproj|solutionrelative:services\\invoice\\validators\\invoicevalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{3F46F6C4-3431-4379-B33F-6C22A0CE9CD4}|be_infoInvocie.csproj|d:\\bach\\info-invoice\\backend\\be_infoinvocie\\repositories\\invoice\\invoiceactionrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3F46F6C4-3431-4379-B33F-6C22A0CE9CD4}|be_infoInvocie.csproj|solutionrelative:repositories\\invoice\\invoiceactionrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{3F46F6C4-3431-4379-B33F-6C22A0CE9CD4}|be_infoInvocie.csproj|d:\\bach\\info-invoice\\backend\\be_infoinvocie\\services\\invoice\\invoiceactionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{3F46F6C4-3431-4379-B33F-6C22A0CE9CD4}|be_infoInvocie.csproj|solutionrelative:services\\invoice\\invoiceactionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3F46F6C4-3431-4379-B33F-6C22A0CE9CD4}|be_infoInvocie.csproj|d:\\bach\\info-invoice\\backend\\be_infoinvocie\\repositories\\invoice\\invoiceactionrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3F46F6C4-3431-4379-B33F-6C22A0CE9CD4}|be_infoInvocie.csproj|solutionrelative:repositories\\invoice\\invoiceactionrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{3F46F6C4-3431-4379-B33F-6C22A0CE9CD4}|be_infoInvocie.csproj|d:\\bach\\info-invoice\\backend\\be_infoinvocie\\services\\invoice\\validators\\invoicevalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3F46F6C4-3431-4379-B33F-6C22A0CE9CD4}|be_infoInvocie.csproj|solutionrelative:services\\invoice\\validators\\invoicevalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3F46F6C4-3431-4379-B33F-6C22A0CE9CD4}|be_infoInvocie.csproj|d:\\bach\\info-invoice\\backend\\be_infoinvocie\\interfaces\\invoice\\validators\\iinvoicevalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3F46F6C4-3431-4379-B33F-6C22A0CE9CD4}|be_infoInvocie.csproj|solutionrelative:interfaces\\invoice\\validators\\iinvoicevalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3F46F6C4-3431-4379-B33F-6C22A0CE9CD4}|be_infoInvocie.csproj|d:\\bach\\info-invoice\\backend\\be_infoinvocie\\controllers\\invoice\\invoiceactioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3F46F6C4-3431-4379-B33F-6C22A0CE9CD4}|be_infoInvocie.csproj|solutionrelative:controllers\\invoice\\invoiceactioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -123,27 +123,14 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "InvoiceListService.cs",
-              "DocumentMoniker": "D:\\Bach\\Info-Invoice\\backend\\be_infoInvocie\\Services\\Invoice\\InvoiceListService.cs",
-              "RelativeDocumentMoniker": "Services\\Invoice\\InvoiceListService.cs",
-              "ToolTip": "D:\\Bach\\Info-Invoice\\backend\\be_infoInvocie\\Services\\Invoice\\InvoiceListService.cs",
-              "RelativeToolTip": "Services\\Invoice\\InvoiceListService.cs",
-              "ViewState": "AgIAABYAAAAAAAAAAAAgwAAAAAAAAAAAAAAAAA==",
+              "Title": "InvoiceActionRepository.cs",
+              "DocumentMoniker": "D:\\Bach\\Info-Invoice\\backend\\be_infoInvocie\\Repositories\\Invoice\\InvoiceActionRepository.cs",
+              "RelativeDocumentMoniker": "Repositories\\Invoice\\InvoiceActionRepository.cs",
+              "ToolTip": "D:\\Bach\\Info-Invoice\\backend\\be_infoInvocie\\Repositories\\Invoice\\InvoiceActionRepository.cs",
+              "RelativeToolTip": "Repositories\\Invoice\\InvoiceActionRepository.cs",
+              "ViewState": "AgIAADMAAAAAAAAAAAAYwEcAAABJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-14T03:41:55.494Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "IInvoiceListService.cs",
-              "DocumentMoniker": "D:\\Bach\\Info-Invoice\\backend\\be_infoInvocie\\Interfaces\\Invoice\\IInvoiceListService.cs",
-              "RelativeDocumentMoniker": "Interfaces\\Invoice\\IInvoiceListService.cs",
-              "ToolTip": "D:\\Bach\\Info-Invoice\\backend\\be_infoInvocie\\Interfaces\\Invoice\\IInvoiceListService.cs",
-              "RelativeToolTip": "Interfaces\\Invoice\\IInvoiceListService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-14T03:41:40.069Z",
+              "WhenOpened": "2026-04-14T10:30:37.207Z",
               "EditorCaption": ""
             },
             {
@@ -154,35 +141,48 @@
               "RelativeDocumentMoniker": "Services\\Invoice\\Validators\\InvoiceValidator.cs",
               "ToolTip": "D:\\Bach\\Info-Invoice\\backend\\be_infoInvocie\\Services\\Invoice\\Validators\\InvoiceValidator.cs",
               "RelativeToolTip": "Services\\Invoice\\Validators\\InvoiceValidator.cs",
-              "ViewState": "AgIAAA0AAAAAAAAAAAAgwAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAACIAAAAAAAAAAAAgwBAAAABIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-14T03:40:15.887Z",
+              "WhenOpened": "2026-04-14T10:29:54.492Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "InvoiceActionService.cs",
-              "DocumentMoniker": "D:\\Bach\\Info-Invoice\\backend\\be_infoInvocie\\Services\\Invoice\\InvoiceActionService.cs",
-              "RelativeDocumentMoniker": "Services\\Invoice\\InvoiceActionService.cs",
-              "ToolTip": "D:\\Bach\\Info-Invoice\\backend\\be_infoInvocie\\Services\\Invoice\\InvoiceActionService.cs",
-              "RelativeToolTip": "Services\\Invoice\\InvoiceActionService.cs",
-              "ViewState": "AgIAABoAAAAAAAAAAAAwwG8AAAAgAAAAAAAAAA==",
+              "Title": "IInvoiceValidator.cs",
+              "DocumentMoniker": "D:\\Bach\\Info-Invoice\\backend\\be_infoInvocie\\Interfaces\\Invoice\\Validators\\IInvoiceValidator.cs",
+              "RelativeDocumentMoniker": "Interfaces\\Invoice\\Validators\\IInvoiceValidator.cs",
+              "ToolTip": "D:\\Bach\\Info-Invoice\\backend\\be_infoInvocie\\Interfaces\\Invoice\\Validators\\IInvoiceValidator.cs",
+              "RelativeToolTip": "Interfaces\\Invoice\\Validators\\IInvoiceValidator.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAjAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-14T03:19:58.105Z",
+              "WhenOpened": "2026-04-14T10:26:37.806Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 4,
-              "Title": "InvoiceActionRepository.cs",
-              "DocumentMoniker": "D:\\Bach\\Info-Invoice\\backend\\be_infoInvocie\\Repositories\\Invoice\\InvoiceActionRepository.cs",
-              "RelativeDocumentMoniker": "Repositories\\Invoice\\InvoiceActionRepository.cs",
-              "ToolTip": "D:\\Bach\\Info-Invoice\\backend\\be_infoInvocie\\Repositories\\Invoice\\InvoiceActionRepository.cs",
-              "RelativeToolTip": "Repositories\\Invoice\\InvoiceActionRepository.cs",
-              "ViewState": "AgIAAE4AAAAAAAAAAAAcwFgAAAAmAAAAAAAAAA==",
+              "Title": "InvoiceActionController.cs",
+              "DocumentMoniker": "D:\\Bach\\Info-Invoice\\backend\\be_infoInvocie\\Controllers\\Invoice\\InvoiceActionController.cs",
+              "RelativeDocumentMoniker": "Controllers\\Invoice\\InvoiceActionController.cs",
+              "ToolTip": "D:\\Bach\\Info-Invoice\\backend\\be_infoInvocie\\Controllers\\Invoice\\InvoiceActionController.cs",
+              "RelativeToolTip": "Controllers\\Invoice\\InvoiceActionController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-14T03:12:17.703Z",
+              "WhenOpened": "2026-04-14T10:21:56.816Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "InvoiceActionService.cs",
+              "DocumentMoniker": "D:\\Bach\\Info-Invoice\\backend\\be_infoInvocie\\Services\\Invoice\\InvoiceActionService.cs",
+              "RelativeDocumentMoniker": "Services\\Invoice\\InvoiceActionService.cs",
+              "ToolTip": "D:\\Bach\\Info-Invoice\\backend\\be_infoInvocie\\Services\\Invoice\\InvoiceActionService.cs",
+              "RelativeToolTip": "Services\\Invoice\\InvoiceActionService.cs",
+              "ViewState": "AgIAAH4AAAAAAAAAAAD4v2IAAABJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-14T09:57:12.459Z",
               "EditorCaption": ""
             }
           ]

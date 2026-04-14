@@ -43,15 +43,15 @@
   },
   {
     "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceActionController",
-    "Method": "AdjustInvoice",
-    "RelativePath": "api/invoice/adjust",
+    "Method": "AddInvoice",
+    "RelativePath": "api/invoice/add",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "dto",
-        "Type": "be_infoInvoice.Core.DTOs.InvoiceAdjustDto",
+        "Name": "request",
+        "Type": "be_infoInvoice.Core.DTOs.InvoiceAddDto",
         "IsRequired": true
       }
     ],
@@ -170,31 +170,15 @@
   },
   {
     "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceActionController",
-    "Method": "PublicInvoice",
-    "RelativePath": "api/invoice/public",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "request",
-        "Type": "be_infoInvoice.Core.DTOs.InvoicePublicDto",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceActionController",
-    "Method": "ReplaceInvoice",
-    "RelativePath": "api/invoice/replace",
+    "Method": "UpdateInvoice",
+    "RelativePath": "api/invoice/update",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
         "Name": "dto",
-        "Type": "be_infoInvoice.Core.DTOs.InvoiceReplaceDto",
+        "Type": "be_infoInvoice.Core.DTOs.InvoiceUpdateDto",
         "IsRequired": true
       }
     ],
