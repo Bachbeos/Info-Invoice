@@ -1,53 +1,31 @@
 import { apiClient } from "../../../lib/apiClient";
 import endpoint from "../../../configs/urls";
-import { normalizeInvoiceDetail } from "../types/invoice";
-import type { IActionInvoiceRequest, IActionInvoiceResponse, IInvoiceDetailApiResponse, IInvoiceDetailResponse, IIssueInvoiceRequest, IIssueInvoiceResponse, InvoiceListResponse } from "../types/invoice";
-
-export interface InvoiceListParams {
-    page: number;
-    pageSize: number;
-    keyword?: string;
-}
-
-type InvoiceListApiResponse =
-    | InvoiceListResponse
-    | {
-        code?: number;
-        message?: string;
-        data?: InvoiceListResponse;
-    };
-
-const normalizeInvoiceList = (response: InvoiceListApiResponse): InvoiceListResponse => {
-    if ("data" in response && response.data) {
-        return response.data;
-    }
-    return response as InvoiceListResponse;
-};
+import type { IActionInvoiceRequest, IActionInvoiceResponse, IInvoiceDetail, IInvoiceRequest, IInvoiceResponse, InvoiceListParams, InvoiceListResponse } from "../types/invoice";
 
 const InvoiceService = {
     getInvoiceList: async (params: InvoiceListParams): Promise<InvoiceListResponse> => {
-        const res = await apiClient.get<InvoiceListApiResponse>(endpoint.invoice.list, params);
-        return normalizeInvoiceList(res);
-    },
-    getInvoiceDetail: async (id: number): Promise<IInvoiceDetailResponse> => {
-        const res = await apiClient.get<IInvoiceDetailApiResponse>(`${endpoint.invoice.detail}/${id}`);
-        return {
-            ...res,
-            data: normalizeInvoiceDetail(res.data),
-        };
+        const res = await apiClient.get<InvoiceListResponse>(endpoint.invoice.list, params);
+        return res;
     },
 
-    issue: (payload: IIssueInvoiceRequest) =>
-        apiClient.post<IIssueInvoiceResponse>(endpoint.invoice.public, payload),
+    getInvoiceDetail: async (id: number): Promise<{ code: number; message?: string; data: IInvoiceDetail }> => {
+        const res = await apiClient.get<{ code: number; message?: string; data: IInvoiceDetail }>(
+            `${endpoint.invoice.detail}/${id}`
+        );
+        return res;
+    },
 
-    replace: (payload: IActionInvoiceRequest) =>
+    add: (payload: IInvoiceRequest) =>
+        apiClient.post<IInvoiceResponse>(endpoint.invoice.public, payload),
+
+    update: (payload: IActionInvoiceRequest) =>
         apiClient.post<IActionInvoiceResponse>(endpoint.invoice.replace, payload),
 
     adjust: (payload: IActionInvoiceRequest) =>
         apiClient.post<IActionInvoiceResponse>(endpoint.invoice.adjust, payload),
 
     delete: (id: number) =>
-        apiClient.delete<IActionInvoiceResponse>(`${endpoint.invoice.delete}/${id}`),
+        apiClient.delete<{ code: number; message?: string }>(`${endpoint.invoice.delete}/${id}`),
 } as const;
 
 

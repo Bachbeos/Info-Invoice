@@ -37,9 +37,8 @@ export default function Table({ columns, data, isLoading }: TableProps) {
                     ) : data.length > 0 ? (
                         data.map((item, index) => (
                             <tr key={item.id || index}>
-                                {columns.map((col, colIdx) => (
+                                {columns.map((col) => (
                                     <td key={col.key} className="py-3 px-4">
-                                        {/* Cột đầu tiên có thể dùng scope="row" nếu cần giống hệt mẫu */}
                                         {col.render ? col.render(item[col.key], item) : item[col.key]}
                                     </td>
                                 ))}

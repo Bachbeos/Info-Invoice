@@ -1,346 +1,211 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-toastify";
 import invoiceService from "../services/invoice";
 import { ApiError } from "../../../lib/apiClient";
 import "./invoice-action.scss";
-
-export type ActionMode = "issue" | "replace" | "adjust" | "view";
+import type { ActionMode, IActionInvoiceRequest, IInvoiceDetail, IInvoiceRequest, IProductItem } from "../types/invoice";
 
 interface PublicInvoiceProps {
     mode?: ActionMode;
-    invoiceDetail?: {
-        id?: number;
-        transactionId?: string;
-        transactionID?: string;
-        invoiceNo?: string;
-        invRef?: string;
-        poNo?: string;
-        paidTp?: string;
-        clsfNo?: string;
-        spcfNo?: string;
-        templateCode?: string;
-        hdNo?: number | null;
-        createdDate?: string;
-        exchCd?: string;
-        exchRt?: number;
-        bankAccount?: string;
-        bankName?: string;
-        invDiscAmount?: number;
-        invVatRate?: string | null;
-        note?: string;
-        customer?: {
-            custCd?: string;
-            custNm?: string;
-            custCompany?: string;
-            taxCode?: string;
-            custCity?: string;
-            custDistrictName?: string;
-            custAddrs?: string;
-            custPhone?: string;
-            custBankAccount?: string;
-            custBankName?: string;
-            email?: string;
-            emailCC?: string;
-        };
-        products?: Array<{
-            itmCd?: string;
-            itmName?: string;
-            itmKnd?: number;
-            unitNm?: string;
-            qty?: number;
-            unprc?: number;
-            discRate?: number;
-            discAmt?: number;
-            vatRt?: string;
-        }>;
-    };
+    invoiceDetail?: IInvoiceDetail;
     onBack?: () => void;
 }
 
-interface ProductItem {
-    id: string;
-    itmCd: string;
-    itmName: string;
-    itmKnd: number;
-    unitNm: string;
-    qty: number;
-    unprc: number;
-    discRate: number;
-    discAmt: number;
-    vatRt: string;
-}
-
 export default function ActionInvoice({ mode: initialMode, invoiceDetail, onBack }: PublicInvoiceProps) {
-    const [transactionID] = useState(crypto.randomUUID());
-    const [actionMode, setActionMode] = useState<ActionMode>(
-        initialMode ?? "issue",
-    );
-    const [transactionIdOld] = useState(
-        (initialMode === "replace" || initialMode === "adjust")
-            ? (invoiceDetail?.transactionId ?? invoiceDetail?.transactionID ?? "")
-            : ""
-    );
+    const [isLoading, setIsLoading] = useState(false);
+    const [actionMode] = useState<ActionMode>(initialMode ?? "add");
     const isViewMode = actionMode === "view";
 
-    const [invoiceInfo, setInvoiceInfo] = useState({
-        invRef: "",
-        poNo: "",
-        paidTp: "TM",
-        clsfNo: "1",
-        spcfNo: "",
-        templateCode: "",
-        hdNo: "",
-        createdDate: new Date().toISOString().split("T")[0],
-        exchCd: "VND",
-        exchRt: 1,
-        bankAccount: "",
-        bankName: "",
-        invDiscAmount: 0,
-        note: "",
-        invVatRate: "",
+    const [formData, setFormData] = useState<IInvoiceDetail>(() => {
+        if (invoiceDetail) {
+            return {
+                ...invoiceDetail,
+                items: invoiceDetail.items.map((item, index) => ({
+                    ...item,
+                    id: item.id ?? index + 1,
+                })),
+            };
+        }
+
+        return {
+            id: 0,
+            transactionId: crypto.randomUUID(),
+            invRef: "",
+            poNo: "",
+            invSubTotal: 0,
+            invVatRate: "",
+            invVatAmount: 0,
+            invDiscAmount: 0,
+            invTotalAmount: 0,
+            paidTp: "TM",
+            note: "",
+            hdNo: "0",
+            createdDate: new Date().toISOString().split("T")[0],
+            clsfNo: "1",
+            spcfNo: "",
+            templateCode: "",
+            exchCd: "VND",
+            exchRt: 1,
+            bankAccount: "",
+            bankName: "",
+            invoiceType: 1,
+            customer: {
+                custCd: "",
+                custNm: "",
+                custCompany: "",
+                taxCode: "",
+                custCity: "",
+                custDistrict: "",
+                custAddrs: "",
+                custPhone: "",
+                custBankAccount: "",
+                custBankName: "",
+                email: "",
+                emailCc: "",
+            },
+            items: [
+                {
+                    id: 1,
+                    itmCd: "",
+                    itmName: "",
+                    itmKnd: "1",
+                    unitNm: "",
+                    qty: 1,
+                    unprc: 0,
+                    amt: 0,
+                    discRate: 0,
+                    discAmt: 0,
+                    vatRt: "10",
+                    vatAmt: 0,
+                    totalAmt: 0,
+                },
+            ],
+        } as IInvoiceDetail;
     });
 
-    const [customer, setCustomer] = useState({
-        custCd: "",
-        custNm: "",
-        custCompany: "",
-        taxCode: "",
-        custCity: "",
-        custDistrictName: "",
-        custAddrs: "",
-        custPhone: "",
-        custBankAccount: "",
-        custBankName: "",
-        email: "",
-        emailCC: "",
-    });
+    const invoiceInfo = formData;
+    const customer = invoiceInfo.customer;
+    const products = invoiceInfo.items;
 
-    const [products, setProducts] = useState<ProductItem[]>(() => [
-        {
-            id: Date.now().toString(),
+    const setInvoiceInfo = (next: IInvoiceDetail) => {
+        setFormData(next);
+    };
+
+    const setCustomer = (next: IInvoiceDetail["customer"]) => {
+        setFormData((prev) => ({ ...prev, customer: next }));
+    };
+
+    const addRow = () => {
+        const nextId = products.reduce((max, item) => Math.max(max, item.id ?? 0), 0) + 1;
+        const nextItem: IProductItem = {
+            id: nextId,
             itmCd: "",
             itmName: "",
-            itmKnd: 1,
+            itmKnd: "1",
             unitNm: "",
             qty: 1,
             unprc: 0,
+            amt: 0,
             discRate: 0,
             discAmt: 0,
             vatRt: "10",
-        },
-    ]);
+            vatAmt: 0,
+            totalAmt: 0,
+        };
 
-    const [isLoading, setIsLoading] = useState(false);
+        setFormData((prev) => ({ ...prev, items: [...prev.items, nextItem] }));
+    };
 
-    // Prefill form từ invoiceDetail khi thay thế/điều chỉnh/xem
-    useEffect(() => {
-        if (!invoiceDetail || (initialMode !== "replace" && initialMode !== "adjust" && initialMode !== "view")) return;
+    const removeRow = (id?: number) => {
+        if (!id || products.length <= 1) return;
+        setFormData((prev) => ({ ...prev, items: prev.items.filter((item) => item.id !== id) }));
+    };
 
-        setInvoiceInfo({
-            invRef: invoiceDetail.invRef ?? "",
-            poNo: invoiceDetail.poNo ?? "",
-            paidTp: invoiceDetail.paidTp ?? "TM",
-            clsfNo: invoiceDetail.clsfNo ?? "1",
-            spcfNo: invoiceDetail.spcfNo ?? "",
-            templateCode: invoiceDetail.templateCode ?? "",
-            hdNo: invoiceDetail.hdNo != null ? String(invoiceDetail.hdNo) : "",
-            createdDate: invoiceDetail.createdDate
-                ? invoiceDetail.createdDate.split("T")[0]
-                : new Date().toISOString().split("T")[0],
-            exchCd: invoiceDetail.exchCd ?? "VND",
-            exchRt: invoiceDetail.exchRt ?? 1,
-            bankAccount: invoiceDetail.bankAccount ?? "",
-            bankName: invoiceDetail.bankName ?? "",
-            invDiscAmount: invoiceDetail.invDiscAmount ?? 0,
-            note: invoiceDetail.note ?? "",
-            invVatRate: invoiceDetail.invVatRate != null ? String(invoiceDetail.invVatRate) : "",
+    const updateProduct = (id: number | undefined, field: keyof IProductItem, value: string | number) => {
+        if (!id) return;
+
+        const nextItems = products.map((item) => {
+            if (item.id !== id) return item;
+
+            const nextItem = { ...item, [field]: value } as IProductItem;
+            if (["qty", "unprc", "discAmt", "vatRt"].includes(field)) {
+                const amt = nextItem.qty * nextItem.unprc - nextItem.discAmt;
+                const vatRate = parseFloat(nextItem.vatRt) || 0;
+                const vatAmt = vatRate > 0 ? (amt * vatRate) / 100 : 0;
+
+                nextItem.amt = amt;
+                nextItem.vatAmt = vatAmt;
+                nextItem.totalAmt = amt + vatAmt;
+            }
+
+            return nextItem;
         });
 
-        if (invoiceDetail.customer) {
-            setCustomer({
-                custCd: invoiceDetail.customer.custCd ?? "",
-                custNm: invoiceDetail.customer.custNm ?? "",
-                custCompany: invoiceDetail.customer.custCompany ?? "",
-                taxCode: invoiceDetail.customer.taxCode ?? "",
-                custCity: invoiceDetail.customer.custCity ?? "",
-                custDistrictName: invoiceDetail.customer.custDistrictName ?? "",
-                custAddrs: invoiceDetail.customer.custAddrs ?? "",
-                custPhone: invoiceDetail.customer.custPhone ?? "",
-                custBankAccount: invoiceDetail.customer.custBankAccount ?? "",
-                custBankName: invoiceDetail.customer.custBankName ?? "",
-                email: invoiceDetail.customer.email ?? "",
-                emailCC: invoiceDetail.customer.emailCC ?? "",
-            });
-        }
+        setFormData((prev) => ({ ...prev, items: nextItems }));
+    };
 
-        if (invoiceDetail.products && invoiceDetail.products.length > 0) {
-            setProducts(
-                invoiceDetail.products.map((p, idx) => ({
-                    id: `prefill-${idx}-${Date.now()}`,
-                    itmCd: p.itmCd ?? "",
-                    itmName: p.itmName ?? "",
-                    itmKnd: p.itmKnd ?? 1,
-                    unitNm: p.unitNm ?? "",
-                    qty: p.qty ?? 1,
-                    unprc: p.unprc ?? 0,
-                    discRate: p.discRate ?? 0,
-                    discAmt: p.discAmt ?? 0,
-                    vatRt: p.vatRt != null ? String(p.vatRt) : "10",
-                }))
-            );
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const calculateSummary = () => {
-        let subTotal = 0;
-        let totalVat = 0;
-        products.forEach((p) => {
-            const amt = p.qty * p.unprc - p.discAmt;
-            subTotal += amt;
-            const vatRtNum = parseFloat(p.vatRt);
-            if (vatRtNum > 0) totalVat += amt * (vatRtNum / 100);
-        });
+    // Tính toán tổng cộng cho toàn hóa đơn
+    const calculateTotals = () => {
+        const subTotal = products.reduce((sum, item) => sum + (item.qty * item.unprc - item.discAmt), 0);
+        const totalVat = products.reduce((sum, item) => sum + item.vatAmt, 0);
         const totalAmount = subTotal + totalVat - invoiceInfo.invDiscAmount;
         return { subTotal, totalVat, totalAmount };
     };
 
-    const { subTotal, totalVat, totalAmount } = calculateSummary();
-
-    const addRow = () => {
-        setProducts([
-            ...products,
-            {
-                id: Date.now().toString(),
-                itmCd: "",
-                itmName: "",
-                itmKnd: 1,
-                unitNm: "Cái",
-                qty: 1,
-                unprc: 0,
-                discRate: 0,
-                discAmt: 0,
-                vatRt: "10",
-            },
-        ]);
-    };
-
-    const removeRow = (id: string) => {
-        if (products.length > 1) setProducts(products.filter((p) => p.id !== id));
-    };
-
-    const updateProduct = (id: string, field: keyof ProductItem, value: string | number) => {
-        setProducts(
-            products.map((p) => {
-                if (p.id !== id) return p;
-                const updated = { ...p, [field]: value };
-                if (field === "discRate") {
-                    const numericValue = Number(value) || 0;
-                    const amt = updated.qty * updated.unprc;
-                    updated.discAmt = Math.round((amt * numericValue) / 100);
-                }
-                if (field === "discAmt") {
-                    const numericValue = Number(value) || 0;
-                    const amt = updated.qty * updated.unprc;
-                    updated.discRate =
-                        amt > 0 ? parseFloat(((numericValue / amt) * 100).toFixed(2)) : 0;
-                }
-                return updated;
-            }),
-        );
-    };
+    const { subTotal, totalVat, totalAmount } = calculateTotals();
 
     const handleSubmit = async () => {
-        const finalProducts = products.map((p) => {
-            const amt = p.qty * p.unprc - p.discAmt;
-            const vatRtNum = parseFloat(p.vatRt);
-            const vatAmt = vatRtNum <= 0 ? 0 : amt * (vatRtNum / 100);
-            return {
-                itmCd: p.itmCd || `PROD-${p.id.slice(-4)}`,
-                itmName: p.itmName,
-                itmKnd: p.itmKnd,
-                unitNm: p.unitNm,
-                qty: p.qty,
-                unprc: p.unprc,
-                amt,
-                discRate: p.discRate,
-                discAmt: p.discAmt,
-                vatRt: p.vatRt,
-                vatAmt: parseFloat(vatAmt.toFixed(0)),
-                totalAmt: parseFloat((amt + vatAmt).toFixed(0)),
-            };
-        });
-
-        const basePayload = {
-            invRef: invoiceInfo.invRef,
-            poNo: invoiceInfo.poNo,
-            invSubTotal: subTotal,
-            invVatRate: invoiceInfo.invVatRate || null,
-            invVatAmount: totalVat,
-            invDiscAmount: invoiceInfo.invDiscAmount,
-            invTotalAmount: totalAmount,
-            paidTp: invoiceInfo.paidTp,
-            note: invoiceInfo.note,
-            hdNo: invoiceInfo.hdNo,
-            createdDate: invoiceInfo.createdDate,
-            clsfNo: invoiceInfo.clsfNo,
-            spcfNo: invoiceInfo.spcfNo,
-            templateCode: invoiceInfo.templateCode,
-            exchCd: invoiceInfo.exchCd,
-            exchRt: invoiceInfo.exchRt,
-            bankAccount: invoiceInfo.bankAccount,
-            bankName: invoiceInfo.bankName,
-            customer,
-            products: finalProducts,
-        };
-
         setIsLoading(true);
-
         try {
-            if (actionMode === "issue") {
-                const payload = { ...basePayload, transactionId: transactionID, hdNo: invoiceInfo.hdNo ? Number(invoiceInfo.hdNo) : null };
+            const hdNoNumber = invoiceInfo.hdNo === "" ? null : Number(invoiceInfo.hdNo);
+            const payload: IInvoiceRequest = {
+                transactionId: invoiceInfo.transactionId,
+                invRef: invoiceInfo.invRef,
+                poNo: invoiceInfo.poNo,
+                invSubTotal: subTotal,
+                invVatRate: invoiceInfo.invVatRate,
+                invVatAmount: totalVat,
+                invDiscAmount: invoiceInfo.invDiscAmount,
+                invTotalAmount: totalAmount,
+                paidTp: invoiceInfo.paidTp,
+                note: invoiceInfo.note,
+                hdNo: hdNoNumber !== null && Number.isNaN(hdNoNumber) ? null : hdNoNumber,
+                createdDate: invoiceInfo.createdDate,
+                clsfNo: invoiceInfo.clsfNo,
+                spcfNo: invoiceInfo.spcfNo,
+                templateCode: invoiceInfo.templateCode,
+                exchCd: invoiceInfo.exchCd,
+                exchRt: invoiceInfo.exchRt,
+                bankAccount: invoiceInfo.bankAccount,
+                bankName: invoiceInfo.bankName,
+                customer: invoiceInfo.customer,
+                products,
+            };
 
-                const res = await invoiceService.issue(payload);
-
-                if (res.code === 200) {
-                    toast.success(
-                        `Phát hành thành công! Số HĐ: ${res.data?.invoiceNo || "(chờ cấp)"} — Ngày: ${res.data?.invDate || ""}`
-                    );
-                } else {
-                    toast.error(`Lỗi ${res.code}: ${res.message}`);
-                }
-
-            } else if (actionMode === "replace" || actionMode === "adjust") {
-                if (!transactionIdOld) {
-                    toast.error("Vui lòng chọn hóa đơn gốc!");
-                    setIsLoading(false);
+            let res;
+            if (actionMode === "add") {
+                res = await invoiceService.add(payload);
+            } else {
+                if (!invoiceDetail?.transactionId) {
+                    toast.error("Thiếu transactionIdOld để cập nhật hóa đơn");
                     return;
                 }
 
-                const payload = {
-                    ...basePayload,
-                    transactionId: transactionID,
-                    hdNo: invoiceInfo.hdNo ? Number(invoiceInfo.hdNo) : null,
-                    transactionIdOld
+                const updatePayload: IActionInvoiceRequest = {
+                    ...payload,
+                    transactionIdOld: invoiceDetail.transactionId,
                 };
+                res = await invoiceService.update(updatePayload);
+            }
 
-                const res = actionMode === "replace"
-                    ? await invoiceService.replace(payload)
-                    : await invoiceService.adjust(payload);
-
-                if (res.code === 200) {
-                    toast.success(res.message || `${actionMode === "replace" ? "Thay thế" : "Điều chỉnh"} hóa đơn thành công!`);
-                } else {
-                    toast.error(`Lỗi ${res.code}: ${res.message}`);
-                }
+            if (res.code === 200) {
+                toast.success(res.message || "Thao tác thành công");
+                onBack?.();
+            } else {
+                toast.error(res.message);
             }
         } catch (err) {
-            if (err instanceof ApiError) {
-                toast.error(`Lỗi hệ thống (${err.status}): ${err.message}`);
-            } else {
-                console.error("Submit Error:", err);
-                toast.error("Không thể kết nối tới server. Vui lòng kiểm tra lại đường truyền.");
-            }
+            toast.error(err instanceof ApiError ? err.message : "Lỗi kết nối");
         } finally {
             setIsLoading(false);
         }
@@ -350,87 +215,19 @@ export default function ActionInvoice({ mode: initialMode, invoiceDetail, onBack
 
     return (
         <div className="invoice-container container my-4">
-            {/* Header */}
+            {/* Header & Buttons (Giữ nguyên logic UI của bạn) */}
             <div className="inv-header d-flex justify-content-between align-items-center mb-4 mt-4">
                 <div className="d-flex align-items-center gap-3">
-                    {onBack && (
-                        <button
-                            type="button"
-                            className="btn btn-outline-secondary btn-sm"
-                            onClick={onBack}
-                        >
-                            <i className="ri-arrow-left-line me-1" />
-                            Quay lại
-                        </button>
-                    )}
+                    <button type="button" className="btn btn-outline-secondary btn-sm" onClick={onBack}>
+                        <i className="ri-arrow-left-line me-1" /> Quay lại
+                    </button>
                     <h3 className="mb-0">
-                        <span className="brand-text">DAEWOO</span>
-                        <span className="separator">|</span>
-                        {actionMode === "issue" && "Phát hành Hóa đơn Điện tử"}
-                        {actionMode === "replace" && "Thay thế Hóa đơn"}
-                        {actionMode === "adjust" && "Điều chỉnh Hóa đơn"}
-                        {actionMode === "view" && "Xem chi tiết Hóa đơn"}
-                        {(actionMode === "replace" || actionMode === "adjust") && invoiceDetail?.invoiceNo && (
-                            <span className="badge bg-warning text-dark ms-2 fs-6">
-                                #{invoiceDetail.invoiceNo}
-                            </span>
-                        )}
+                        {actionMode === "add" ? "Thêm Mới Hóa Đơn" : "Chi Tiết Hóa Đơn"}
                     </h3>
-                </div>
-                <div className="d-flex align-items-center gap-3">
-                    {!initialMode && (
-                        <div className="btn-group shadow-sm" role="group">
-                            <input
-                                type="radio"
-                                className="btn-check"
-                                name="actionMode"
-                                id="btnradio1"
-                                autoComplete="off"
-                                checked={actionMode === "issue"}
-                                onChange={() => setActionMode("issue")}
-                            />
-                            <label className="btn btn-outline-primary" htmlFor="btnradio1">
-                                Phát hành
-                            </label>
-
-                            <input
-                                type="radio"
-                                className="btn-check"
-                                name="actionMode"
-                                id="btnradio2"
-                                autoComplete="off"
-                                checked={actionMode === "replace"}
-                                onChange={() => setActionMode("replace")}
-                            />
-                            <label className="btn btn-outline-primary" htmlFor="btnradio2">
-                                Thay thế
-                            </label>
-
-                            <input
-                                type="radio"
-                                className="btn-check"
-                                name="actionMode"
-                                id="btnradio3"
-                                autoComplete="off"
-                                checked={actionMode === "adjust"}
-                                onChange={() => setActionMode("adjust")}
-                            />
-                            <label className="btn btn-outline-primary" htmlFor="btnradio3">
-                                Điều chỉnh
-                            </label>
-                        </div>
-                    )}
                 </div>
             </div>
 
-            {isViewMode && (
-                <div className="alert alert-info py-2 mb-3" role="alert">
-                    Chế độ xem chi tiết: không thể chỉnh sửa dữ liệu hóa đơn.
-                </div>
-            )}
-
             <fieldset disabled={isViewMode}>
-
                 {/*Thông tin Hóa đơn */}
                 <div className="card inv-card mb-4">
                     <div className="card-header inv-card-header">
@@ -549,7 +346,7 @@ export default function ActionInvoice({ mode: initialMode, invoiceDetail, onBack
                                 </label>
                                 <select
                                     className="form-select"
-                                    value={invoiceInfo.invVatRate}
+                                    value={invoiceInfo.invVatRate ?? ""}
                                     onChange={(e) =>
                                         setInvoiceInfo({ ...invoiceInfo, invVatRate: e.target.value })
                                     }
@@ -704,9 +501,9 @@ export default function ActionInvoice({ mode: initialMode, invoiceDetail, onBack
                                     type="email"
                                     className="form-control"
                                     placeholder="Nhập địa chỉ email"
-                                    value={customer.emailCC}
+                                    value={customer.emailCc}
                                     onChange={(e) =>
-                                        setCustomer({ ...customer, emailCC: e.target.value })
+                                        setCustomer({ ...customer, emailCc: e.target.value })
                                     }
                                 />
                             </div>
@@ -726,9 +523,9 @@ export default function ActionInvoice({ mode: initialMode, invoiceDetail, onBack
                                 <input
                                     className="form-control"
                                     placeholder="Nhập quận / huyện"
-                                    value={customer.custDistrictName}
+                                    value={customer.custDistrict}
                                     onChange={(e) =>
-                                        setCustomer({ ...customer, custDistrictName: e.target.value })
+                                        setCustomer({ ...customer, custDistrict: e.target.value })
                                     }
                                 />
                             </div>
@@ -835,7 +632,7 @@ export default function ActionInvoice({ mode: initialMode, invoiceDetail, onBack
                                                         className="form-select form-select-sm"
                                                         value={p.itmKnd}
                                                         onChange={(e) =>
-                                                            updateProduct(p.id, "itmKnd", +e.target.value)
+                                                            updateProduct(p.id, "itmKnd", e.target.value)
                                                         }
                                                     >
                                                         <option value={1}>Hàng hóa/Dịch vụ</option>
@@ -984,27 +781,10 @@ export default function ActionInvoice({ mode: initialMode, invoiceDetail, onBack
                 </div>
             </fieldset>
 
-            {/* Submit */}
             {!isViewMode && (
-                <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <button
-                        className="btn btn-publish btn-lg px-5"
-                        onClick={handleSubmit}
-                        disabled={isLoading}
-                    >
-                        {isLoading ? (
-                            <>
-                                <span className="spinner-border spinner-border-sm me-2" />
-                                Đang xử lý...
-                            </>
-                        ) : (
-                            <>
-                                <i className="ri-send-plane-fill me-2" />
-                                {actionMode === "issue" && "PHÁT HÀNH HÓA ĐƠN"}
-                                {actionMode === "replace" && "THAY THẾ HÓA ĐƠN"}
-                                {actionMode === "adjust" && "ĐIỀU CHỈNH HÓA ĐƠN"}
-                            </>
-                        )}
+                <div className="d-flex justify-content-end">
+                    <button className="btn btn-primary btn-lg px-5" onClick={handleSubmit} disabled={isLoading}>
+                        {isLoading ? "Đang xử lý..." : "PHÁT HÀNH HÓA ĐƠN"}
                     </button>
                 </div>
             )}

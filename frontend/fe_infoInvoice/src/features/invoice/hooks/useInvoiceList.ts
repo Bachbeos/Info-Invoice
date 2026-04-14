@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import InvoiceService from "../services/invoice";
-import type { InvoiceItem, InvoiceListResponse } from "../types/invoice";
+import type { InvoiceItem, InvoiceListData } from "../types/invoice";
 
 const DEFAULT_PAGE_SIZE = 10;
 
-const getSafeTotalPages = (res: InvoiceListResponse): number => {
-    if (res.totalPages && res.totalPages > 0) return res.totalPages;
-    if (!res.total || !res.pageSize) return 1;
-    return Math.max(1, Math.ceil(res.total / res.pageSize));
+const getSafeTotalPages = (data: InvoiceListData): number => {
+    if (data.totalPages && data.totalPages > 0) return data.totalPages;
+    if (!data.total || !data.pageSize) return 1;
+    return Math.max(1, Math.ceil(data.total / data.pageSize));
 };
 
 interface UseInvoiceListResult {
@@ -31,13 +31,23 @@ export function useInvoiceList(): UseInvoiceListResult {
 
     const pageSize = DEFAULT_PAGE_SIZE;
 
-    const fetchInvoices = useCallback(async (currentPage: number) => {
+    const getInvoices = useCallback(async (currentPage: number) => {
         setIsLoading(true);
         try {
             const response = await InvoiceService.getInvoiceList({ page: currentPage, pageSize });
-            setItems(response.items || []);
-            setTotal(response.total || 0);
-            setTotalPages(getSafeTotalPages(response));
+            const data = response.data;
+
+            if (response.code !== 200) {
+                toast.error(response.message || "Không tải được danh sách hóa đơn");
+                setItems([]);
+                setTotal(0);
+                setTotalPages(1);
+                return;
+            }
+
+            setItems(data?.items || []);
+            setTotal(data?.total || 0);
+            setTotalPages(data ? getSafeTotalPages(data) : 1);
         } catch {
             toast.error("Không tải được danh sách hóa đơn");
             setItems([]);
@@ -49,8 +59,8 @@ export function useInvoiceList(): UseInvoiceListResult {
     }, [pageSize]);
 
     useEffect(() => {
-        fetchInvoices(page);
-    }, [page, fetchInvoices]);
+        getInvoices(page);
+    }, [page, getInvoices]);
 
     return {
         items,
@@ -60,6 +70,6 @@ export function useInvoiceList(): UseInvoiceListResult {
         totalPages,
         total,
         setPage,
-        refresh: () => fetchInvoices(page),
+        refresh: () => getInvoices(page),
     };
 }
