@@ -4,12 +4,12 @@ import type { ReactElement } from "react";
 
 
 export function AuthRedirect() {
-    return <Navigate to={getToken() ? "/public-invoice" : "/login"} replace />;
+    return <Navigate to={getToken() ? "/invoice" : "/login"} replace />;
 }
 
 export function GuestOnlyRoute({ children }: { children: ReactElement }) {
     if (getToken()) {
-        return <Navigate to="/public-invoice" replace />;
+        return <Navigate to="/invoice" replace />;
     }
     return children;
 }

@@ -170,6 +170,22 @@
   },
   {
     "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceActionController",
+    "Method": "PublishInvoice",
+    "RelativePath": "api/invoice/publish/{id}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "be_infoInvoice.Controllers.Invoice.InvoiceActionController",
     "Method": "UpdateInvoice",
     "RelativePath": "api/invoice/update",
     "HttpMethod": "POST",

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import AuthService from "../services/auth";
-import type { ProviderResponse } from "../types/auth";
+import type { ProviderResponse } from "../types/auth.type";
 
 interface UseProvidersResult {
     providers: ProviderResponse[];

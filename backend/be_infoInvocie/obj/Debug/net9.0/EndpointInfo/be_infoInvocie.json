@@ -1,0 +1,865 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Invoice API",
+    "description": "API quản lý hóa đơn",
+    "version": "v1"
+  },
+  "paths": {
+    "/api/auth/providers": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/auth/provider-configs": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [
+          {
+            "name": "providerId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/invoice/add": {
+      "post": {
+        "tags": [
+          "InvoiceAction"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvoiceAddDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvoiceAddDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvoiceAddDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/invoice/update": {
+      "post": {
+        "tags": [
+          "InvoiceAction"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvoiceUpdateDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvoiceUpdateDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvoiceUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/invoice/delete/{id}": {
+      "delete": {
+        "tags": [
+          "InvoiceAction"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/invoice/publish/{id}": {
+      "post": {
+        "tags": [
+          "InvoiceAction"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/invoice/check-tax-status": {
+      "post": {
+        "tags": [
+          "InvoiceCheck"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaxCheckRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaxCheckRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaxCheckRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/invoice/export-xml/{transactionId}": {
+      "get": {
+        "tags": [
+          "InvoiceExport"
+        ],
+        "parameters": [
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/invoice/list": {
+      "get": {
+        "tags": [
+          "InvoiceList"
+        ],
+        "parameters": [
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "FromDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "ToDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/invoice/get/{id}": {
+      "get": {
+        "tags": [
+          "InvoiceList"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/invoice/print/{transactionId}": {
+      "get": {
+        "tags": [
+          "InvoicePrint"
+        ],
+        "parameters": [
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Tct/login": {
+      "post": {
+        "tags": [
+          "Tct"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TctLoginRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TctLoginRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TctLoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Tct/sync": {
+      "post": {
+        "tags": [
+          "Tct"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TctSyncRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TctSyncRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TctSyncRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Tct/detail": {
+      "post": {
+        "tags": [
+          "Tct"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TctDetailRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TctDetailRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TctDetailRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Tct/xml": {
+      "post": {
+        "tags": [
+          "Tct"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TctXmlRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TctXmlRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TctXmlRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CustomerDto": {
+        "type": "object",
+        "properties": {
+          "custCd": {
+            "type": "string",
+            "nullable": true
+          },
+          "custNm": {
+            "type": "string"
+          },
+          "custCompany": {
+            "type": "string",
+            "nullable": true
+          },
+          "taxCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "custCity": {
+            "type": "string",
+            "nullable": true
+          },
+          "custDistrict": {
+            "type": "string",
+            "nullable": true
+          },
+          "custAddrs": {
+            "type": "string",
+            "nullable": true
+          },
+          "custPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "custBankAccount": {
+            "type": "string",
+            "nullable": true
+          },
+          "custBankName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "emailCc": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "InvoiceAddDto": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string"
+          },
+          "invRef": {
+            "type": "string"
+          },
+          "poNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "invSubTotal": {
+            "type": "number",
+            "format": "double"
+          },
+          "invVatRate": {
+            "type": "string",
+            "nullable": true
+          },
+          "invDiscAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "invVatAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "invTotalAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "paidTp": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          },
+          "hdNo": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "clsfNo": {
+            "type": "string"
+          },
+          "spcfNo": {
+            "type": "string"
+          },
+          "templateCode": {
+            "type": "string"
+          },
+          "exchCd": {
+            "type": "string",
+            "nullable": true
+          },
+          "exchRt": {
+            "type": "number",
+            "format": "double"
+          },
+          "bankAccount": {
+            "type": "string",
+            "nullable": true
+          },
+          "bankName": {
+            "type": "string",
+            "nullable": true
+          },
+          "customer": {
+            "$ref": "#/components/schemas/CustomerDto"
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "InvoiceUpdateDto": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string"
+          },
+          "invRef": {
+            "type": "string"
+          },
+          "poNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "invSubTotal": {
+            "type": "number",
+            "format": "double"
+          },
+          "invVatRate": {
+            "type": "string",
+            "nullable": true
+          },
+          "invDiscAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "invVatAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "invTotalAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "paidTp": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          },
+          "hdNo": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "clsfNo": {
+            "type": "string"
+          },
+          "spcfNo": {
+            "type": "string"
+          },
+          "templateCode": {
+            "type": "string"
+          },
+          "exchCd": {
+            "type": "string",
+            "nullable": true
+          },
+          "exchRt": {
+            "type": "number",
+            "format": "double"
+          },
+          "bankAccount": {
+            "type": "string",
+            "nullable": true
+          },
+          "bankName": {
+            "type": "string",
+            "nullable": true
+          },
+          "customer": {
+            "$ref": "#/components/schemas/CustomerDto"
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemDto"
+            }
+          },
+          "transactionIdOld": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ItemDto": {
+        "type": "object",
+        "properties": {
+          "itmCd": {
+            "type": "string",
+            "nullable": true
+          },
+          "itmName": {
+            "type": "string"
+          },
+          "itmKnd": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unitNm": {
+            "type": "string",
+            "nullable": true
+          },
+          "qty": {
+            "type": "number",
+            "format": "double"
+          },
+          "unprc": {
+            "type": "number",
+            "format": "double"
+          },
+          "amt": {
+            "type": "number",
+            "format": "double"
+          },
+          "discRate": {
+            "type": "number",
+            "format": "double"
+          },
+          "discAmt": {
+            "type": "number",
+            "format": "double"
+          },
+          "vatRt": {
+            "type": "string"
+          },
+          "vatAmt": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalAmt": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "providerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "url": {
+            "type": "string"
+          },
+          "maDvcs": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "tenantId": {
+            "type": "string",
+            "nullable": true
+          },
+          "key": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TaxCheckRequest": {
+        "type": "object",
+        "properties": {
+          "taxCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "TctDetailRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nbmst": {
+            "type": "string"
+          },
+          "khmshdon": {
+            "type": "string"
+          },
+          "khhdon": {
+            "type": "string"
+          },
+          "shdon": {
+            "type": "string"
+          },
+          "hsgoc": {
+            "type": "string"
+          },
+          "ttxly": {
+            "type": "string"
+          },
+          "session": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TctLoginRequest": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TctSyncRequest": {
+        "type": "object",
+        "properties": {
+          "fromDate": {
+            "type": "string"
+          },
+          "toDate": {
+            "type": "string"
+          },
+          "invoiceType": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "session": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TctXmlRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nbmst": {
+            "type": "string"
+          },
+          "khmshdon": {
+            "type": "string"
+          },
+          "khhdon": {
+            "type": "string"
+          },
+          "shdon": {
+            "type": "string"
+          },
+          "hsgoc": {
+            "type": "string"
+          },
+          "session": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

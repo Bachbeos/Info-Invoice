@@ -11,14 +11,29 @@ using be_infoInvoice.Services.Auth;
 using be_infoInvoice.Services.Auth.Infrastructure;
 using be_infoInvoice.Services.Invoice;
 using be_infoInvoice.Services.Invoice.Validators;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Invoice API",
+        Version = "v1",
+        Description = "API quản lý hóa đơn"
+    });
+    options.SupportNonNullableReferenceTypes();
+});
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -52,15 +67,15 @@ builder.Services.AddScoped<IUserContext, UserContext>();
 builder.Services.AddScoped<IInvoiceListRepository, InvoiceListRepository>();
 builder.Services.AddScoped<IInvoiceListService, InvoiceListService>();
 
-
+builder.Services.AddHttpClient();
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin()   // Cho phép mọi domain
-            .AllowAnyMethod()  
-            .AllowAnyHeader();  
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
     });
 });
 
@@ -84,10 +99,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseHttpsRedirection();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
+
+app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
 

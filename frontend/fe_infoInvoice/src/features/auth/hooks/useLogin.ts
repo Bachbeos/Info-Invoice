@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import AuthService from "../services/auth";
 import { useProviders } from "../hooks/useProvider";
-import type { LoginFormValues } from "../types/auth";
+import type { LoginFormValues } from "../types/auth.type";
 import { setToken } from "../../../utils/token";
 import { showToast } from "../../../utils/common";
 

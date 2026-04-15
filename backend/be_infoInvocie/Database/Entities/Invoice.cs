@@ -27,9 +27,9 @@ public class Invoice
     [Column("note")] public string? Note { get; set; }
     [Column("hd_no")] public string? HdNo { get; set; }
     [Column("created_date")] public DateTime CreatedDate { get; set; }
-    [Column("clsf_no")] public string ClsfNo { get; set; } = string.Empty;
-    [Column("spcf_no")] public string SpcfNo { get; set; } = string.Empty;
-    [Column("template_code")] public string TemplateCode { get; set; } = string.Empty;
+    [Column("clsf_no")] public string? ClsfNo { get; set; }
+    [Column("spcf_no")] public string? SpcfNo { get; set; }
+    [Column("template_code")] public string? TemplateCode { get; set; }
     [MaxLength(50)]
     [Column("exch_cd")] public string? ExchCd { get; set; }
     [Column("exch_rt")] public decimal ExchRt { get; set; }
@@ -52,4 +52,7 @@ public class Invoice
 
     [Column("note_desc")]
     public string? NoteDesc { get; set; }
+    [MaxLength(255)]
+    [Column("macqt")]
+    public string? Macqt { get; set; }
 }

@@ -1,6 +1,6 @@
 import endpoint from "../../../configs/urls";
 import { apiClient } from "../../../lib/apiClient";
-import type { AuthRequest, AuthResponse, ProviderConfig, ProviderResponse } from "../types/auth";
+import type { AuthRequest, AuthResponse, ProviderConfig, ProviderResponse } from "../types/auth.type";
 
 
 const AuthService = {

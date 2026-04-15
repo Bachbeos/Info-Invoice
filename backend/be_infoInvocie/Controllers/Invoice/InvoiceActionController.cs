@@ -8,10 +8,10 @@ namespace be_infoInvoice.Controllers.Invoice;
 
 [Route("api/invoice")]
 [ApiController]
-[Authorize]
 public class InvoiceActionController(IInvoiceActionService service, IUserContext userContext) : ControllerBase
 {
 
+    [Authorize]
     [HttpPost("add")]
     public async Task<IActionResult> AddInvoice([FromBody] InvoiceAddDto request)
     {
@@ -28,6 +28,7 @@ public class InvoiceActionController(IInvoiceActionService service, IUserContext
     //        : BadRequest(ApiResult<bool>.Failure(400, "Lưu hóa đơn thay thế thất bại"));
     //}
 
+    [Authorize]
     [HttpPost("update")]
     public async Task<IActionResult> UpdateInvoice([FromBody] InvoiceUpdateDto dto)
     {
@@ -37,6 +38,7 @@ public class InvoiceActionController(IInvoiceActionService service, IUserContext
             : BadRequest(ApiResult<bool>.Failure(400, "Lưu hóa đơn thất bại!"));
     }
 
+    [Authorize]
     [HttpDelete("delete/{id:int}")]
     public async Task<IActionResult> DeleteInvoice(int id)
     {
@@ -46,5 +48,13 @@ public class InvoiceActionController(IInvoiceActionService service, IUserContext
             userContext.TaxId);
 
         return result.Code == 200 ? Ok(result) : NotFound(result);
+    }
+
+    [AllowAnonymous]
+    [HttpPost("publish/{id:int}")]
+    public async Task<IActionResult> PublishInvoice(int id)
+    {
+        var result = await service.PublishInvoiceAsync(userContext.UserId, userContext.TaxId, id);
+        return result.Code == 200 ? Ok(result) : BadRequest(result);
     }
 }

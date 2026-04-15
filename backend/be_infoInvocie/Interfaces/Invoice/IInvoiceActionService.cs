@@ -8,4 +8,5 @@ public interface IInvoiceActionService
     //Task<bool> ReplaceInvoiceAsync(InvoiceReplaceDto dto, int userId, int taxId);
     Task<bool> UpdateInvoiceAsync(InvoiceUpdateDto dto, int userId, int taxId);
     Task<ApiResult<bool>> DeleteInvoiceAsync (int userId, int taxId, int id);
+    Task<ApiResult<bool>> PublishInvoiceAsync(int userId, int taxId, int invoiceId);
 }

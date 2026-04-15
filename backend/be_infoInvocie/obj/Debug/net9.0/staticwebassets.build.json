@@ -1,12 +1,1 @@
-{
-  "Version": 1,
-  "Hash": "16dc38LaBK5CQx9ksI/IL/qZQq7gJ3sSvLBY0tp3f2I=",
-  "Source": "be_infoInvoice",
-  "BasePath": "_content/be_infoInvoice",
-  "Mode": "Default",
-  "ManifestType": "Build",
-  "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": [],
-  "Endpoints": []
-}
+{"Version":1,"Hash":"16dc38LaBK5CQx9ksI/IL/qZQq7gJ3sSvLBY0tp3f2I=","Source":"be_infoInvoice","BasePath":"_content/be_infoInvoice","Mode":"Default","ManifestType":"Build","ReferencedProjectsConfiguration":[],"DiscoveryPatterns":[],"Assets":[],"Endpoints":[]}

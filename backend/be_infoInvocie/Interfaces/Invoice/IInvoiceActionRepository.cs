@@ -9,4 +9,6 @@ public interface IInvoiceActionRepository
     Task<UserAccessConfig?> GetFirstAccessConfigAsync(int userId);
     Task<bool> DeleteAsync(int userId, int taxId, int id);
     Task<bool> UpdateInvoiceAsync(Database.Entities.Invoice invoice);
+    Task<Database.Entities.Invoice?> GetInvoiceWithDetailsAsync(int invoiceId, int userId, int taxId);
+    Task<Database.Entities.Invoice?> GetInvoiceWithDetailsByIdAsync(int invoiceId);
 }

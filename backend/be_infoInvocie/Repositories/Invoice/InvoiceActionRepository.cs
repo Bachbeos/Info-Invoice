@@ -67,28 +67,50 @@ public class InvoiceActionRepository : IInvoiceActionRepository
             .FirstOrDefaultAsync(i => i.TransactionId == invoice.TransactionId && i.UserId == invoice.UserId);
 
         if (existingInvoice == null) return false;
-        
+
         invoice.Id = existingInvoice.Id;
         _context.Entry(existingInvoice).CurrentValues.SetValues(invoice);
 
         if (existingInvoice.Customer != null && invoice.Customer != null)
         {
             invoice.Customer.Id = existingInvoice.Customer.Id;
-            invoice.Customer.InvoiceId = existingInvoice.Id;
+            invoice.Customer.InvoiceId = existingInvoice.Id; //fk
             _context.Entry(existingInvoice.Customer).CurrentValues.SetValues(invoice.Customer);
         }
         else if (existingInvoice.Customer == null && invoice.Customer != null)
         {
-            invoice.Customer.InvoiceId = existingInvoice.Id;
+            invoice.Customer.InvoiceId = existingInvoice.Id; //fk
             existingInvoice.Customer = invoice.Customer;
         }
 
-        _context.InvoiceItems.RemoveRange(existingInvoice.Items);
+        //_context.InvoiceItems.RemoveRange(existingInvoice.Items);
+        //foreach (var item in invoice.Items)
+        //{
+        //    item.InvoiceId = existingInvoice.Id;
+        //}
+        //existingInvoice.Items = invoice.Items;
+
+        var itemsToRemove = existingInvoice.Items
+            .Where(ei => !invoice.Items.Any(i => i.Id == ei.Id))
+            .ToList();
+
+        _context.InvoiceItems.RemoveRange(itemsToRemove);
+
         foreach (var item in invoice.Items)
         {
-            item.InvoiceId = existingInvoice.Id;
+            var existingItem = existingInvoice.Items
+                .FirstOrDefault(ei => ei.Id == item.Id);
+
+            if (existingItem != null)
+            {
+                _context.Entry(existingItem).CurrentValues.SetValues(item);
+            }
+            else
+            {
+                item.InvoiceId = existingInvoice.Id;
+                existingInvoice.Items.Add(item);
+            }
         }
-        existingInvoice.Items = invoice.Items;
 
         return await _context.SaveChangesAsync() > 0;
     }
@@ -176,5 +198,21 @@ public class InvoiceActionRepository : IInvoiceActionRepository
 
         await _context.SaveChangesAsync();
         return true;
+    }
+
+    public async Task<Database.Entities.Invoice?> GetInvoiceWithDetailsAsync(int invoiceId, int userId, int taxId)
+    {
+        return await _context.Invoices
+            .Include(i => i.Customer)
+            .Include(i => i.Items)
+            .FirstOrDefaultAsync(i => i.Id == invoiceId && i.UserId == userId && i.TaxId == taxId);
+    }
+
+    public async Task<Database.Entities.Invoice?> GetInvoiceWithDetailsByIdAsync(int invoiceId)
+    {
+        return await _context.Invoices
+            .Include(i => i.Customer)
+            .Include(i => i.Items)
+            .FirstOrDefaultAsync(i => i.Id == invoiceId);
     }
 }
