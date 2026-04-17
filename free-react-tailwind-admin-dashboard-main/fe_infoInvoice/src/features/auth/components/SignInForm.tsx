@@ -1,8 +1,6 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../../icons";
+import { EyeCloseIcon, EyeIcon } from "../../../icons";
 import Label from "../../../components/form/Label";
 import Input from "../../../components/form/input/InputField";
 import Checkbox from "../../../components/form/input/Checkbox";
@@ -35,46 +33,41 @@ export default function SignInForm() {
     setProviders(data);
 
     if (data.length > 0) {
-      setFormData(prev => ({ ...prev, providerId: data[0].id }));
+      setFormData((prev) => ({ ...prev, providerId: data[0].id }));
     } else {
-      showToast("Lỗi nhà cung cấp thất bại", "error")
+      showToast("Lỗi nhà cung cấp thất bại", "error");
     }
 
     setProvidersLoading(false);
     setIsLoading(false);
-  }
+  };
 
   useEffect(() => {
     getProviders();
-  }, [])
-
-  const fetchProviderUrl = async (signal: AbortSignal) => {
-    try {
-      const configs = await AuthService.getProviderConfigs(
-        formData.providerId,
-        signal
-      );
-
-      const url =
-        Array.isArray(configs) && configs.length > 0
-          ? (configs[0].url ?? "")
-          : "";
-
-      setFormData(prev => ({ ...prev, url }));
-    } catch (error: any) {
-      if (error.name === "AbortError") return;
-
-      setFormData(prev => ({ ...prev, url: "" }));
-    }
-  };
-
+  }, []);
 
   useEffect(() => {
     if (!formData.providerId) return;
 
     const controller = new AbortController();
 
-    fetchProviderUrl(controller.signal);
+    (async () => {
+      try {
+        const configs = await AuthService.getProviderConfigs(
+          formData.providerId,
+          controller.signal,
+        );
+
+        setFormData((prev) => ({
+          ...prev,
+          url: configs?.[0]?.url ?? "",
+        }));
+      } catch (error) {
+        if ((error as Error).name !== "AbortError") {
+          setFormData((prev) => ({ ...prev, url: "" }));
+        }
+      }
+    })();
 
     return () => controller.abort();
   }, [formData.providerId]);
@@ -86,14 +79,14 @@ export default function SignInForm() {
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     if (!formData.username || !formData.password) {
-      showToast("Vui lòng điền đầy đủ thông tin bắt buộc", "error")
+      showToast("Vui lòng điền đầy đủ thông tin bắt buộc", "error");
       return;
     }
 
@@ -101,28 +94,22 @@ export default function SignInForm() {
     const response = await AuthService.login(formData);
 
     if (response.code === 200) {
-      setToken(response.data.accessToken)
+      setToken(response.data.accessToken);
       showToast("Đăng nhập thành công", "success");
-      navigate('/invoice')
+      navigate("/invoice");
     } else {
-      showToast("Đăng nhập thất bại, vui lòng kiểm tra lại thông tin đăng nhập", "error");
+      showToast(
+        "Đăng nhập thất bại, vui lòng kiểm tra lại thông tin đăng nhập",
+        "error",
+      );
     }
 
     setIsLoading(false);
-  }
+  };
 
   return (
     <div className="flex flex-col flex-1">
-      <div className="w-full max-w-md pt-10 mx-auto">
-        <Link
-          to="/"
-          className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-        >
-          <ChevronLeftIcon className="size-5" />
-          Back to dashboard
-        </Link>
-      </div>
-      <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
+      <div className="flex flex-col justify-center flex-1 w-full max-w-lg mx-auto">
         <div>
           <div className="mb-5 sm:mb-8">
             <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
@@ -138,9 +125,15 @@ export default function SignInForm() {
                 <div className="grid grid-cols-2 gap-6">
                   <div>
                     <Label>
-                      Tên đăng nhập <span className="text-error-500">*</span>{" "}
+                      Tên đăng nhập{" "}
+                      <span className="text-error-500">*</span>{" "}
                     </Label>
-                    <Input name="username" value={formData.username} onChange={handleInputChange} placeholder="Nhập" />
+                    <Input
+                      name="username"
+                      value={formData.username}
+                      onChange={handleInputChange}
+                      placeholder="Nhập"
+                    />
                   </div>
                   <div>
                     <Label>
@@ -168,27 +161,49 @@ export default function SignInForm() {
                   </div>
                   <div>
                     <Label>Mã số thuế người dùng</Label>
-                    <Input type="text" name="maDvcs" value={formData.maDvcs} onChange={handleInputChange} placeholder="Nhập mã số thuế người dùng" />
+                    <Input
+                      type="text"
+                      name="maDvcs"
+                      value={formData.maDvcs}
+                      onChange={handleInputChange}
+                      placeholder="Nhập mã số thuế người dùng"
+                    />
                   </div>
                   <div>
                     <Label>Ehoadon</Label>
-                    <Input type="text" name="tenantId" value={formData.tenantId} onChange={handleInputChange} placeholder="Nếu có" />
+                    <Input
+                      type="text"
+                      name="tenantId"
+                      value={formData.tenantId}
+                      onChange={handleInputChange}
+                      placeholder="Nếu có"
+                    />
                   </div>
                   <div>
                     <Label>Chọn nhà cung cấp</Label>
                     <Select
                       options={providerOptions}
-                      placeholder={isLoading ? "Đang tải..." : "Chọn nhà cung cấp"}
+                      placeholder={
+                        isLoading ? "Đang tải..." : "Chọn nhà cung cấp"
+                      }
                       value={String(formData.providerId)}
-                      onChange={(value) => setFormData(prev => ({ ...prev, providerId: Number(value) }))}
+                      onChange={(value) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          providerId: Number(value),
+                        }))
+                      }
                       className="dark:bg-dark-900"
                     />
                   </div>
                   <div>
-                    <Label>
-                      Domain nhà cung cấp
-                    </Label>
-                    <Input name="url" value={formData.url} onChange={handleInputChange} placeholder="" />
+                    <Label>Domain nhà cung cấp</Label>
+                    <Input
+                      name="url"
+                      value={formData.url}
+                      onChange={handleInputChange}
+                      placeholder=""
+                    />
                   </div>
                 </div>
 
@@ -207,7 +222,10 @@ export default function SignInForm() {
                   </Link>
                 </div>
                 <div>
-                  <Button className="w-full" disabled={isLoading || providersLoading}>
+                  <Button
+                    className="w-full"
+                    disabled={isLoading || providersLoading}
+                  >
                     {isLoading ? "Đang xử lý..." : "Đăng nhập"}
                   </Button>
                 </div>

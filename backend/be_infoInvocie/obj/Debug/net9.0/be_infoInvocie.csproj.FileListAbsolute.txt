@@ -97,3 +97,6 @@ D:\Bach\Info-Invoice\backend\be_infoInvocie\obj\Debug\net9.0\staticwebassets.upT
 D:\Bach\Info-Invoice\backend\be_infoInvocie\bin\Debug\net9.0\Swashbuckle.AspNetCore.Swagger.dll
 D:\Bach\Info-Invoice\backend\be_infoInvocie\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 D:\Bach\Info-Invoice\backend\be_infoInvocie\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+D:\Data\Projects\InfoPlus\InfoInvoice\backend\be_infoInvocie\bin\Debug\net9.0\Swashbuckle.AspNetCore.Swagger.dll
+D:\Data\Projects\InfoPlus\InfoInvoice\backend\be_infoInvocie\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+D:\Data\Projects\InfoPlus\InfoInvoice\backend\be_infoInvocie\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerUI.dll
